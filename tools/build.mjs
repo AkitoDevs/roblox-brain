@@ -10,7 +10,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const terms = loadBlocklist(root);
 const entries = loadKnowledge(root);
 const REQUIRED = ["title", "topic", "scope", "source"];
-const SOURCES = ["own-testing", "community-lesson", "roblox-docs"];
+const SOURCES = ["own-testing", "community-lesson", "roblox-docs", "maintainer-skill"];
 
 let failed = false;
 console.log(`PUBLISH REPORT  (${entries.length} entries, ${terms.length} blocklist terms loaded)\n`);

@@ -8,6 +8,7 @@
     "build": "node tools/build.mjs",
     "start": "node server/index.mjs",
     "triage": "node tools/triage.mjs",
+    "draft": "node tools/draft.mjs",
     "test:lib": "node tests/lib.test.mjs",
     "test": "node tests/lib.test.mjs && node tests/smoke.mjs"
   },

@@ -2,6 +2,8 @@ node_modules/
 dist/
 # PRIVATE: your own terms (game names, usernames, etc). Never commit this.
 blocklist.private.txt
+# PRIVATE: where your own skills live on this machine (used by triage to propose skill edits)
+triage/skills.local.json
 # Raw submissions and review state stay on the server / your machine, not in the public repo
 inbox/*
 !inbox/.gitkeep

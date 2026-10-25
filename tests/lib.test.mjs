@@ -57,8 +57,18 @@ fs.writeFileSync(path.join(inbox, "2026-10-25.jsonl"), [
   rec("dddd", { fix: "email me at x@y.com" }),   // should be rejected
   "not json",                                    // should be rejected
 ].join("\n") + "\n");
+// a stand-in for one of the maintainer's local skills (triage reads skills from a config, never from a fixed path)
+const skillDir = path.join(inbox, "skills", "fake-ui-skill");
+fs.mkdirSync(skillDir, { recursive: true });
+const skillFile = path.join(skillDir, "SKILL.md");
+fs.writeFileSync(skillFile, "---\nname: fake-ui-skill\n---\n# UI layout\n\n- Lists inside a CanvasGroup: use UIListLayout and AutomaticSize on the container.\n");
+const skillsConfig = path.join(inbox, "skills.json");
+fs.writeFileSync(skillsConfig, JSON.stringify({ skills: [
+  { name: "fake-ui-skill", path: skillFile, synced: true },
+  { name: "unrelated-skill", path: path.join(inbox, "skills", "missing", "SKILL.md") },
+] }));
 const before = fs.readdirSync(path.join(root, "candidates")).filter((f) => f.endsWith(".json"));
-const out = execFileSync("node", [path.join(root, "tools/triage.mjs")], { env: { ...process.env, RBRAIN_INBOX: inbox }, encoding: "utf8" });
+const out = execFileSync("node", [path.join(root, "tools/triage.mjs")], { env: { ...process.env, RBRAIN_INBOX: inbox, RBRAIN_SKILLS_CONFIG: skillsConfig }, encoding: "utf8" });
 assert.match(out, /5 submissions -> 1 candidates, 2 rejected/);
 const made = fs.readdirSync(path.join(root, "candidates")).filter((f) => f.endsWith(".json") && !before.includes(f));
 assert.equal(made.length, 1);
@@ -67,7 +77,32 @@ assert.equal(cand.reports, 3);
 assert.equal(cand.independent_installs, 3);
 assert.equal(cand.status, "needs_review");
 assert.ok(fs.existsSync(path.join(inbox, "processed", "2026-10-25.jsonl")), "processed files are moved out of the inbox");
+// --- triage records which shared entries and which local skills the lesson relates to
+assert.equal(cand.related_entries[0].id, "ui/scaling");
+assert.equal(cand.related_skills.length, 1);
+assert.equal(cand.related_skills[0].name, "fake-ui-skill");
+assert.equal(cand.related_skills[0].synced, true);
 
+// --- drafts: refused until approved; scaffold + diff only ever write under candidates/drafts/
+const candPath = path.join(root, "candidates", made[0]);
+const draftDir = path.join(root, "candidates", "drafts", made[0].replace(/\.json$/, ""));
+const draft = (...a) => execFileSync("node", [path.join(root, "tools/draft.mjs"), ...a, candPath], { encoding: "utf8", stdio: "pipe" });
+assert.throws(() => draft(), /Only candidates the maintainer marked "approved"/);
+fs.writeFileSync(candPath, JSON.stringify({ ...cand, status: "approved" }));
+const entryPath = path.join(root, "knowledge", "ui", "scaling.md");
+const entryBefore = fs.readFileSync(entryPath, "utf8"), skillBefore = fs.readFileSync(skillFile, "utf8");
+assert.match(draft(), /Drafts scaffolded/);
+assert.equal(fs.readFileSync(path.join(draftDir, "entry.proposed.md"), "utf8"), entryBefore);
+assert.match(fs.readFileSync(path.join(draftDir, "DRAFT.md"), "utf8"), /SYNCED from your account/);
+fs.appendFileSync(path.join(draftDir, "entry.proposed.md"), "- Draft line for the entry.\n");
+fs.appendFileSync(path.join(draftDir, "skill.proposed.md"), "- Draft line for the skill.\n");
+assert.match(draft("--diff"), /nothing was applied/);
+assert.match(fs.readFileSync(path.join(draftDir, "entry.diff"), "utf8"), /^\+- Draft line for the entry\.$/m);
+assert.match(fs.readFileSync(path.join(draftDir, "skill.diff"), "utf8"), /^\+- Draft line for the skill\.$/m);
+assert.equal(fs.readFileSync(entryPath, "utf8"), entryBefore, "draft never edits knowledge/");
+assert.equal(fs.readFileSync(skillFile, "utf8"), skillBefore, "draft never edits the skill");
+
+fs.rmSync(draftDir, { recursive: true, force: true });
 fs.rmSync(path.join(root, "candidates", made[0]));
 fs.rmSync(inbox, { recursive: true, force: true });
-console.log("lib tests passed: validation, safety scan, blocklist, search, triage");
+console.log("lib tests passed: validation, safety scan, blocklist, search, triage, skill matching, drafts");

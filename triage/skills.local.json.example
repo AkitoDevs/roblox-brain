@@ -1,0 +1,7 @@
+{
+  "_comment": "Copy to skills.local.json (gitignored). List the skills that approved lessons may improve. '~' is your home folder. synced=true means the skill comes from your Claude account: drafts give you the full new SKILL.md to paste into the skill editor instead of editing the file.",
+  "skills": [
+    { "name": "my-roblox-ui-skill", "path": "~/.claude/skills/my-roblox-ui-skill/SKILL.md", "synced": false },
+    { "name": "my-synced-vfx-skill", "path": "~/.claude/skills/synced/ACCOUNT-ID/my-synced-vfx-skill/SKILL.md", "synced": true }
+  ]
+}
