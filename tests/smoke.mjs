@@ -30,14 +30,13 @@ const NOTICE_START = "Roblox Brain shares short tips to help improve the knowled
 const a = await connect(projectA);
 // instructions describe default-on sharing, the notice and the user's commands
 const instructions = a.client.getInstructions() ?? "";
-assert.match(instructions, /BEFORE writing.*Roblox or Luau code.*call search_knowledge/s);
-assert.match(instructions, /sharing is on by default/);
-assert.match(instructions, /turn off Roblox Brain sharing/);
+assert.match(instructions, /Only for Roblox or Luau work: call search_knowledge once per task/);
+assert.match(instructions, /turn off\/on Roblox Brain sharing/);
 assert.match(instructions, /show my shared tips/);
 assert.match(instructions, /delete my shared tips/);
 
 const tools = (await a.client.listTools()).tools.map((t) => t.name).sort();
-assert.deepEqual(tools, ["delete_shared_tips", "get_skill", "search_knowledge", "set_sharing", "sharing_status", "show_shared_tips", "submit_lesson"]);
+assert.deepEqual(tools, ["get_skill", "search_knowledge", "sharing", "submit_lesson"]);
 assert.ok(!JSON.stringify((await a.client.listTools()).tools).includes("user_approved"), "no per-tip approval parameter");
 
 // new project: nothing can be shared before the notice has been delivered
@@ -63,7 +62,7 @@ assert.deepEqual(Object.keys(rec).sort(), ["apis", "fix", "install", "outcome", 
 const hist = fs.readFileSync(history, "utf8");
 assert.ok(hist.indexOf(NOTICE_START) < hist.indexOf("## "), "the notice is at the top of the sharing history");
 assert.match(hist, /## \d{4}-\d{2}-\d{2}: ui\/scaling\n- Problem: Last list item was clipped/);
-assert.match(await a.call("submit_lesson", { ...good, problem: "Second tip about a clipped list in a scroll frame." }), /^Shared\. No need to mention it/);
+assert.match(await a.call("submit_lesson", { ...good, problem: "Second tip about a clipped list in a scroll frame." }), /^Shared\. Don't mention it/);
 assert.equal(inboxLines().length, 2);
 
 // bad tips are dropped: identifying text, code, and the leak guard (project folder, user name, computer name)
@@ -80,16 +79,16 @@ for (const [label, bad] of [
 assert.equal(inboxLines().length, 2, "nothing extra was shared");
 
 // show my shared tips
-assert.match(await a.call("show_shared_tips"), /Your sharing history .*\n[\s\S]*## \d{4}-\d{2}-\d{2}: ui\/scaling/);
+assert.match(await a.call("sharing", { action: "show" }), /Your sharing history .*\n[\s\S]*## \d{4}-\d{2}-\d{2}: ui\/scaling/);
 await a.client.close();
 
 // a different project gets the notice again
 const b = await connect(projectB);
-assert.ok((await b.call("sharing_status")).startsWith("[Roblox Brain sharing notice"), "new project shows the notice again");
-assert.match(await b.call("sharing_status"), /^Roblox Brain sharing is on/);
+assert.ok((await b.call("sharing", { action: "status" })).startsWith("[Roblox Brain sharing notice"), "new project shows the notice again");
+assert.match(await b.call("sharing", { action: "status" }), /^Roblox Brain sharing is on/);
 
 // turning sharing off: nothing is shared and no notice appears anywhere
-assert.match(await b.call("set_sharing", { enabled: false }), /off for every project/);
+assert.match(await b.call("sharing", { action: "off" }), /off for every project/);
 assert.match(await b.call("submit_lesson", good), /sharing is off/);
 await b.client.close();
 const c2 = await connect(path.join(tmp, "projects", "gamma"));
@@ -101,7 +100,7 @@ assert.equal(inboxLines().length, 2, "nothing shared while off");
 // delete my shared tips: removes every tip from this install, keeps others, and rotates the install id
 fs.appendFileSync(path.join(inbox, "other.jsonl"), JSON.stringify({ ...good, install: "aaaaaaaaaaaaaaaa", received: "2026-10-25" }) + "\n");
 const idBefore = JSON.parse(fs.readFileSync(path.join(home, "config.json"), "utf8")).install_id;
-assert.match(await c2.call("delete_shared_tips"), /^Deleted 2 shared tips/);
+assert.match(await c2.call("sharing", { action: "delete" }), /^Deleted 2 shared tips/);
 assert.equal(inboxLines().length, 1, "only the other install's tip is left");
 assert.equal(JSON.parse(inboxLines()[0]).install, "aaaaaaaaaaaaaaaa");
 assert.notEqual(JSON.parse(fs.readFileSync(path.join(home, "config.json"), "utf8")).install_id, idBefore, "new install id after deleting");

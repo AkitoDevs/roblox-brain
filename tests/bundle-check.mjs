@@ -44,7 +44,7 @@ try {
   child.stdin.write(JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" }) + "\n");
 
   const tools = (await request("tools/list")).tools.map((t) => t.name).sort();
-  assert.deepEqual(tools, ["delete_shared_tips", "get_skill", "search_knowledge", "set_sharing", "sharing_status", "show_shared_tips", "submit_lesson"]);
+  assert.deepEqual(tools, ["get_skill", "search_knowledge", "sharing", "submit_lesson"]);
   const tip = { topic: "ui/scaling", problem: "A list was clipped inside a scroll frame.", fix: "Use AutomaticSize on the container." };
   assert.match(await call("submit_lesson", tip), /notice hasn't been shown/, "nothing shared before the notice");
   assert.ok(!fs.existsSync(path.join(tmp, "inbox")));
@@ -54,9 +54,9 @@ try {
   assert.doesNotMatch(await call("search_knowledge", { query: "light rays window beams" }), /Roblox Brain shares short tips/);
   assert.match(await call("submit_lesson", tip), /Shared 1 short tip with the maintainer/);
   assert.equal(fs.readdirSync(path.join(tmp, "inbox")).length, 1, "shared into the temp inbox only");
-  assert.match(await call("set_sharing", { enabled: false }), /off for every project/);
+  assert.match(await call("sharing", { action: "off" }), /off for every project/);
   assert.match(await call("submit_lesson", tip), /sharing is off/);
-  console.log("bundle check passed: no node_modules needed; instructions, 7 tools, notice before sharing, search, share, off");
+  console.log("bundle check passed: no node_modules needed; instructions, 4 tools, notice before sharing, search, share, off");
 } finally {
   child.kill();
   fs.rmSync(tmp, { recursive: true, force: true });

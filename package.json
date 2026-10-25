@@ -13,7 +13,7 @@
     "test:bundle": "node tests/bundle-check.mjs",
     "test:lib": "node tests/lib.test.mjs",
     "sync": "node tools/sync-skills.mjs",
-    "test": "node tests/lib.test.mjs && node tests/smoke.mjs && node tests/shutdown.test.mjs && node tests/sync.test.mjs && node tools/bundle.mjs --check && node tests/bundle-check.mjs"
+    "test": "node tests/lib.test.mjs && node tests/smoke.mjs && node tests/shutdown.test.mjs && node tests/footprint.test.mjs && node tests/sync.test.mjs && node tools/bundle.mjs --check && node tests/bundle-check.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",

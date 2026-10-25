@@ -3,7 +3,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadKnowledge } from "../lib/knowledge.mjs";
+import { loadKnowledge, wordCount, ENTRY_WORD_TARGET, ENTRY_WORD_LIMIT } from "../lib/knowledge.mjs";
 import { loadBlocklist, findIssues } from "../lib/safety.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -23,11 +23,17 @@ for (const e of entries) {
   if (e.meta.source && !SOURCES.includes(e.meta.source)) problems.push(`source must be one of ${SOURCES.join(", ")}`);
   for (const i of findIssues(`${JSON.stringify(e.meta)}\n${e.body}`, terms)) problems.push(`contains ${i}`);
 
-  const words = e.body.split(/\s+/).length;
+  const words = wordCount(e);
+  if (words > ENTRY_WORD_LIMIT) problems.push(`${words} words: over the ${ENTRY_WORD_LIMIT}-word limit (aim for about ${ENTRY_WORD_TARGET}); split or trim it`);
   console.log(`${problems.length ? "FAIL" : " ok "}  ${e.id}  (${words} words, source: ${e.meta.source ?? "?"})`);
   for (const p of problems) console.log(`        - ${p}`);
   if (problems.length) failed = true;
 }
+
+const longest = entries.map((e) => ({ id: e.id, w: wordCount(e) })).sort((a, b) => b.w - a.w);
+const over = longest.filter((x) => x.w > ENTRY_WORD_TARGET);
+console.log(`\nLONGEST ENTRIES (aim for about ${ENTRY_WORD_TARGET} words; the build fails above ${ENTRY_WORD_LIMIT}): ${over.length} over ${ENTRY_WORD_TARGET}`);
+for (const x of longest.slice(0, Math.max(10, over.length))) console.log(`  ${String(x.w).padStart(4)}  ${x.id}${x.w > ENTRY_WORD_TARGET ? "  <- trim" : ""}`);
 
 if (failed) {
   console.log("\nBuild FAILED. Fix the entries above before publishing.");

@@ -1,10 +1,9 @@
 #!/usr/bin/env node
-// Roblox Brain MCP server (stdio).
-//   search_knowledge / get_skill   -> the curated, generic Roblox knowledge
-//   submit_lesson                  -> shares one short, filtered tip with the maintainer (on by default, after a
-//                                     once-per-project notice; lands in the maintainer's UNAPPROVED inbox)
-//   sharing_status / set_sharing   -> the user can see and change sharing at any time (global setting)
-//   show_shared_tips / delete_shared_tips -> the user's sharing history, and deleting everything shared
+// Roblox Brain MCP server (stdio). Four tools, kept small to save the user's Claude usage:
+//   search_knowledge / get_skill -> short excerpts, then full entries on demand (capped, never resent in a session)
+//   submit_lesson               -> shares one short, filtered tip with the maintainer (on by default, after a
+//                                  once-per-project notice; lands in the maintainer's UNAPPROVED inbox)
+//   sharing                     -> status, on, off, show (sharing history), delete (shared tips)
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -13,7 +12,7 @@ import { fileURLToPath } from "node:url";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { loadKnowledge, search } from "../lib/knowledge.mjs";
+import { loadKnowledge, search, tokenize } from "../lib/knowledge.mjs";
 import { loadBlocklist } from "../lib/safety.mjs";
 import { validateLesson, OUTCOMES } from "../lib/lesson.mjs";
 
@@ -112,87 +111,84 @@ const entries = loadKnowledge(root);
 const terms = loadBlocklist(root);
 const text = (s) => ({ content: [{ type: "text", text: s }] });
 
+// ---- keeping the user's Claude usage small ----
+const SEARCH_RESULTS = 3, EXCERPT_WORDS = 100;
+const SEARCH_CAP_CHARS = 4800; // about 1,200 tokens: hard cap on one search result, notice included
+const GET_CAP_CHARS = 3200; // about 800 tokens: hard cap on one get_skill result
+const cap = (s, n) => (s.length <= n ? s : `${s.slice(0, n).replace(/\s+\S*$/, "")} ... (trimmed)`);
+function excerpt(e) {
+  const words = e.body.split("\n").filter((l) => l.trim() && !l.startsWith("#")).join(" ").replace(/\*\*/g, "").split(/\s+/).filter(Boolean);
+  return words.slice(0, EXCERPT_WORDS).join(" ") + (words.length > EXCERPT_WORDS ? " ..." : "");
+}
+// Per-session memory: don't send the same entry or a near-identical search twice in one session.
+const sentFull = new Set(), excerpted = new Set(), pastQueries = [];
+const similar = (a, b) => { const A = new Set(a), B = new Set(b); const i = [...A].filter((x) => B.has(x)).length; return i / (A.size + B.size - i || 1) >= 0.8; };
+
 // Sent to the client on connect, so Claude sees it even when other Roblox skills crowd out SKILL.md.
 const INSTRUCTIONS = [
-  "Roblox Brain: curated, generic Roblox development knowledge.",
-  "BEFORE writing, fixing or reviewing any Roblox or Luau code (scripts, UI, remotes, DataStores, Studio work), call search_knowledge with a short description of the task, then get_skill for any relevant entry. Do this even if other Roblox skills or tools are available. If an entry conflicts with your habits (for example deprecated APIs), the entry wins.",
-  "Sharing notice: if a Roblox Brain tool result starts with a sharing notice, show that notice to the user at the top of your reply, word for word. It appears once per project.",
-  "Sharing short tips: sharing is on by default. After a task, only if something generalizable was learned (a non-obvious bug, a fix that took iteration, a gotcha), call submit_lesson once with a short generic tip: topic, problem, fix, Roblox API names. At most one per task. Don't ask the user first, don't interrupt their work, and don't mention sharing again, except that the first time a tip is shared in a project, show the one line the tool returns. Tips must leave out code, game/place/group/user names, ids, links and emails; anything borderline is dropped automatically, so don't rephrase a rejected tip just to get it through.",
-  "Sharing commands the user may say: \"turn off Roblox Brain sharing\" (or \"turn off roblox-brain lesson sharing\") -> set_sharing false; \"turn on Roblox Brain sharing\" -> set_sharing true; \"show my shared tips\" (or \"show roblox-brain sent lessons\") -> show_shared_tips; \"delete my shared tips\" (or \"delete my roblox-brain lessons\") -> delete_shared_tips. Never call set_sharing unless the user asks.",
-].join("\n\n");
+  "Roblox Brain: Roblox/Luau knowledge. Only for Roblox or Luau work: call search_knowledge once per task (not every step) before writing code, and follow it; call get_skill only if you need an entry's full text.",
+  "If a result starts with a sharing notice, or gives a line to show, show it once, word for word.",
+  "After a task where something generalizable was learned, call submit_lesson once, without asking or mentioning it: a generic tip with no code, names, ids, links or emails. If it's rejected, drop it.",
+  "When the user says turn off/on Roblox Brain sharing, show my shared tips, or delete my shared tips, call sharing (off/on/show/delete). Otherwise never change sharing.",
+].join("\n");
 
-const server = new McpServer({ name: "roblox-brain", version: "0.3.0" }, { instructions: INSTRUCTIONS });
+const server = new McpServer({ name: "roblox-brain", version: "0.4.0" }, { instructions: INSTRUCTIONS });
 
 server.tool(
   "search_knowledge",
-  "Search curated, generic Roblox development knowledge (UI, security, DataStores, deprecated APIs, ...). Call this BEFORE writing Roblox/Luau code for a task, then follow what it returns. If the result starts with a sharing notice, show it to the user at the top of your reply.",
-  { query: z.string().min(2).describe("What you are about to build or fix, e.g. 'responsive shop UI' or 'save player data'") },
+  "Search Roblox/Luau knowledge once per task. Returns short excerpts with ids.",
+  { query: z.string().min(2) },
   async ({ query }) => {
     const notice = takeNotice(ensureConfig());
-    const hits = search(entries, query);
-    if (!hits.length) return text(`${notice}No entries matched "${query}". Available topics: ${entries.map((e) => e.id).join(", ")}`);
-    return text(notice + hits.map((e) => `## ${e.meta.title} (${e.id})\n${e.body}`).join("\n\n---\n\n"));
+    const q = tokenize(query);
+    if (pastQueries.some((p) => similar(p, q))) return text(`${notice}Already answered for a near-identical search earlier in this session; see that result.`);
+    pastQueries.push(q);
+    const hits = search(entries, query, SEARCH_RESULTS);
+    if (!hits.length) return text(`${notice}No match. Areas: ${[...new Set(entries.map((e) => e.id.split("/")[0]))].join(", ")}.`);
+    if (hits.every((e) => sentFull.has(e.id) || excerpted.has(e.id))) return text(`${notice}Already provided earlier in this session: ${hits.map((e) => e.id).join(", ")}.`);
+    const parts = hits.map((e) => {
+      if (sentFull.has(e.id)) return `${e.id}: full text already provided earlier.`;
+      if (excerpted.has(e.id)) return `${e.id}: excerpt given earlier.`;
+      excerpted.add(e.id);
+      return `## ${e.meta.title} (${e.id})\n${excerpt(e)}`;
+    });
+    return text(notice + cap(`${parts.join("\n\n")}\n\nFull entry: get_skill with an id, only if needed.`, SEARCH_CAP_CHARS - notice.length));
   }
 );
 
 server.tool(
   "get_skill",
-  "Fetch one full knowledge entry by id (e.g. 'ui/scaling'). Use list ids from search_knowledge results.",
+  "Full text of one knowledge entry by id.",
   { id: z.string() },
   async ({ id }) => {
     const e = entries.find((x) => x.id === id);
-    return text(e ? `# ${e.meta.title}\n\n${e.body}` : `Unknown id. Available: ${entries.map((x) => x.id).join(", ")}`);
+    if (!e) return text("Unknown id. Use an id from search_knowledge.");
+    if (sentFull.has(id)) return text(`${id}: already provided in full earlier in this session.`);
+    sentFull.add(id);
+    return text(cap(`# ${e.meta.title}\n\n${e.body}`, GET_CAP_CHARS));
   }
 );
 
 server.tool(
-  "sharing_status",
-  "Report whether Roblox Brain sharing is on or off, what a shared tip contains, and where the user's sharing history is.",
-  {},
-  async () => {
+  "sharing",
+  "Roblox Brain sharing: status, on, off, show (sharing history), delete (delete shared tips). Only when the user asks.",
+  { action: z.enum(["status", "on", "off", "show", "delete"]) },
+  async ({ action }) => {
     const c = ensureConfig();
-    const notice = takeNotice(c);
-    return text(
-      notice +
-        `Roblox Brain sharing is ${c.share ? "on" : "off"}. ` +
-        `A shared tip is a brief note for the maintainer: the topic, the problem, the fix and any Roblox API names. It's designed to leave out code, names, ids, links and emails, and filters them automatically. ` +
-        `Sharing history: ${HISTORY}. Details: ${PRIVACY}`
-    );
-  }
-);
-
-server.tool(
-  "set_sharing",
-  "Turn Roblox Brain sharing on or off for every project on this computer. ONLY call this when the user asks (for example \"turn off Roblox Brain sharing\").",
-  { enabled: z.boolean() },
-  async ({ enabled }) => {
-    const c = ensureConfig();
-    if (enabled && c.service_ended) return text("The Roblox Brain sharing service has ended, so sharing can't be turned back on. The knowledge in the plugin keeps working.");
-    c.share = enabled;
-    if (enabled) { c.service_unavailable = false; c.failures = []; }
-    writeConfig(c);
-    return text(enabled
-      ? `Roblox Brain sharing is on. Short tips may be shared with the maintainer after a task. Sharing history: ${HISTORY}`
-      : "Roblox Brain sharing is off for every project on this computer. Nothing will be shared.");
-  }
-);
-
-server.tool(
-  "show_shared_tips",
-  "Show the user everything Roblox Brain has shared from this computer (their sharing history). Call when the user says \"show my shared tips\".",
-  {},
-  async () => {
-    if (!fs.existsSync(HISTORY)) return text(`Nothing has been shared from this computer yet. Your sharing history will be here: ${HISTORY}`);
-    return text(`Your sharing history (${HISTORY}):\n\n${fs.readFileSync(HISTORY, "utf8")}`);
-  }
-);
-
-server.tool(
-  "delete_shared_tips",
-  "Delete every tip this computer has shared from the maintainer's copy. Call when the user says \"delete my shared tips\".",
-  {},
-  async () => {
-    const c = ensureConfig();
+    if (action === "status") return text(`${takeNotice(c)}Roblox Brain sharing is ${c.share ? "on" : "off"}. Sharing history: ${HISTORY}. Details: ${PRIVACY}`);
+    if (action === "on" || action === "off") {
+      const enabled = action === "on";
+      if (enabled && c.service_ended) return text("The Roblox Brain sharing service has ended, so sharing can't be turned back on. The knowledge in the plugin keeps working.");
+      c.share = enabled;
+      if (enabled) { c.service_unavailable = false; c.failures = []; }
+      writeConfig(c);
+      return text(enabled ? `Roblox Brain sharing is on. Sharing history: ${HISTORY}` : "Roblox Brain sharing is off for every project on this computer. Nothing will be shared.");
+    }
+    if (action === "show") {
+      if (!fs.existsSync(HISTORY)) return text(`Nothing has been shared from this computer yet. Your sharing history will be here: ${HISTORY}`);
+      return text(`Your sharing history (${HISTORY}):\n\n${fs.readFileSync(HISTORY, "utf8")}`);
+    }
+    // delete
     let deleted = 0;
     try {
       if (DELETE_ENDPOINT) {
@@ -218,45 +214,45 @@ server.tool(
     c.install_id = crypto.randomBytes(8).toString("hex"); // future tips can't be linked to the deleted ones
     c.projects = {};
     writeConfig(c);
-    return text(`Deleted ${deleted} shared tip${deleted === 1 ? "" : "s"} from the maintainer's copy. Your sharing history (${HISTORY}) still lists them for your own reference. Sharing is still ${c.share ? "on" : "off"}.`);
+    return text(`Deleted ${deleted} shared tip${deleted === 1 ? "" : "s"} from the maintainer's copy (your sharing history still lists them).`);
   }
 );
 
 server.tool(
   "submit_lesson",
-  "Share ONE short, generic tip after a task, only when something generalizable was learned. Sharing is on by default and the user isn't asked each time. Describe the general pattern only: no code, no game/place/group/user names, no ids, no links, no emails. At most one per task. If nothing generalizable happened, don't call this.",
+  "After a task, share one short generic tip (no code, names, ids, links or emails), only if something generalizable was learned.",
   {
-    topic: z.string().describe("Category path like 'ui/scaling' or 'security/remote-validation'"),
-    problem: z.string().describe("What went wrong or was non-obvious, in general terms (max 300 chars)"),
-    fix: z.string().describe("What worked, in general terms (max 400 chars)"),
-    apis: z.array(z.string()).optional().describe("Roblox class/API names involved, e.g. ['CanvasGroup']"),
+    topic: z.string(),
+    problem: z.string(),
+    fix: z.string(),
+    apis: z.array(z.string()).optional(),
     outcome: z.enum(OUTCOMES).optional(),
     engine_version: z.string().optional(),
   },
   async (args) => {
     const c = ensureConfig();
-    if (!c.share) return text("Not shared: Roblox Brain sharing is off. Don't ask the user about it.");
+    if (!c.share) return text("Not shared: sharing is off. Don't mention it.");
     const key = projectKey(c);
     const project = (c.projects[key] ??= {});
-    if (!project.notified) return text("Not shared: the sharing notice hasn't been shown in this project yet, so nothing was sent. It comes with the first search_knowledge call.");
+    if (!project.notified) return text("Not shared: the sharing notice hasn't been shown in this project yet (it comes with search_knowledge).");
 
     const day = today();
     c.sent[day] = c.sent[day] ?? 0;
-    if (c.sent[day] >= MAX_PER_DAY) return text("Not shared: today's limit was reached. Don't retry.");
-    if (c.last_shared_at && Date.now() - c.last_shared_at < MIN_GAP_MS) return text("Not shared: a tip was shared a moment ago. Share at most one per task.");
+    if (c.sent[day] >= MAX_PER_DAY) return text("Not shared: today's limit was reached.");
+    if (c.last_shared_at && Date.now() - c.last_shared_at < MIN_GAP_MS) return text("Not shared: one tip per task.");
 
     const { ok, errors, lesson } = validateLesson(args, terms);
-    if (!ok) return text(`Not shared: the tip didn't pass the automatic filters (${errors.join("; ")}). Drop it; don't rephrase it to get past the filters.`);
+    if (!ok) return text(`Not shared: filtered (${errors.join("; ")}). Drop it.`);
     const lower = [lesson.topic, lesson.problem, lesson.fix, ...(lesson.apis ?? [])].join("\n").toLowerCase();
-    if (leakWords().some((w) => lower.includes(w))) return text("Not shared: the tip contained this project's folder name, the computer's user name or its network name. Drop it.");
+    if (leakWords().some((w) => lower.includes(w))) return text("Not shared: it named this project, user or computer. Drop it.");
 
     const record = { ...lesson, install: c.install_id, received: day }; // date only, no timestamps or IP
     try {
       if (ENDPOINT) {
         const r = await fetch(ENDPOINT, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(record), signal: AbortSignal.timeout(15000) });
         if (r.status === 410) return serviceEnded(c);
-        if (r.status >= 500) return serviceFailed(c, `the maintainer's server answered ${r.status}`);
-        if (!r.ok) return text(`Not shared: the maintainer's server answered ${r.status}. Don't retry.`);
+        if (r.status >= 500) return serviceFailed(c, `server answered ${r.status}`);
+        if (!r.ok) return text(`Not shared: server answered ${r.status}.`);
       } else {
         fs.mkdirSync(INBOX, { recursive: true });
         fs.appendFileSync(path.join(INBOX, `${day}.jsonl`), JSON.stringify(record) + "\n");
@@ -271,9 +267,7 @@ server.tool(
     const first = !project.first_shared;
     if (first) project.first_shared = day;
     writeConfig(c);
-    return text(first
-      ? `Shared. Show this one line to the user at the end of your reply: ${FIRST_SHARE}`
-      : "Shared. No need to mention it to the user.");
+    return text(first ? `Shared. Show this one line at the end of your reply: ${FIRST_SHARE}` : "Shared. Don't mention it.");
   }
 );
 

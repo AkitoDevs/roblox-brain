@@ -54,10 +54,10 @@ try {
     assert.equal(countMsg([ended], ENDED), 1, "the ended message is returned once");
     assert.equal(config(home).share, false);
     assert.equal(config(home).service_ended, true);
-    const after = [await s.call("submit_lesson", good), await s.call("sharing_status"), await s.call("search_knowledge", { query: "ui" })];
+    const after = [await s.call("submit_lesson", good), await s.call("sharing", { action: "status" }), await s.call("search_knowledge", { query: "ui" })];
     assert.equal(countMsg(after, ENDED), 0, "the message isn't repeated");
     assert.match(after[0], /sharing is off/);
-    assert.match(await s.call("set_sharing", { enabled: true }), /has ended, so sharing can't be turned back on/);
+    assert.match(await s.call("sharing", { action: "on" }), /has ended, so sharing can't be turned back on/);
     assert.equal(config(home).share, false, "stays off for good");
     await s.client.close();
   }
@@ -84,9 +84,9 @@ try {
     const last = await s.call("submit_lesson", good);
     assert.equal(countMsg([last], UNAVAILABLE), 1, "the unavailable message is returned once");
     assert.equal(config(home).share, false);
-    assert.equal(countMsg([await s.call("submit_lesson", good), await s.call("sharing_status")], UNAVAILABLE), 0, "not repeated");
+    assert.equal(countMsg([await s.call("submit_lesson", good), await s.call("sharing", { action: "status" })], UNAVAILABLE), 0, "not repeated");
     // the user can turn it back on later (unlike a 410)
-    assert.match(await s.call("set_sharing", { enabled: true }), /sharing is on/);
+    assert.match(await s.call("sharing", { action: "on" }), /sharing is on/);
     await s.client.close();
   }
 
