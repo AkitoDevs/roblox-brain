@@ -22,6 +22,13 @@ await client.connect(new StdioClientTransport({
 const call = async (name, args = {}) => (await client.callTool({ name, arguments: args })).content[0].text;
 const good = { topic: "ui/scaling", problem: "Last list item was clipped inside a CanvasGroup.", fix: "Use AutomaticSize on the container and a UIListLayout instead of a fixed height.", apis: ["CanvasGroup", "UIListLayout"], outcome: "ran_clean", user_approved: true };
 
+// Server instructions reach the client on connect: search first, and the consent rules.
+const instructions = client.getInstructions() ?? "";
+assert.match(instructions, /BEFORE writing.*Roblox or Luau code.*call search_knowledge/s);
+assert.match(instructions, /OFF by default/);
+assert.match(instructions, /Never call set_sharing unless the user explicitly asks/);
+assert.match(instructions, /show the user the exact lesson text and get a clear yes/);
+
 const tools = (await client.listTools()).tools.map((t) => t.name).sort();
 assert.deepEqual(tools, ["get_skill", "search_knowledge", "set_sharing", "sharing_status", "submit_lesson"]);
 
