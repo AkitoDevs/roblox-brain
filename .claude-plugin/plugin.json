@@ -1,0 +1,6 @@
+{
+  "name": "roblox-brain",
+  "version": "0.1.0",
+  "description": "Curated Roblox/Luau knowledge for Claude, with an opt-in anonymous lesson feedback loop.",
+  "license": "MIT"
+}

@@ -1,0 +1,13 @@
+node_modules/
+dist/
+# PRIVATE: your own terms (game names, usernames, etc). Never commit this.
+blocklist.private.txt
+# Raw submissions and review state stay on the server / your machine, not in the public repo
+inbox/*
+!inbox/.gitkeep
+candidates/*
+!candidates/.gitkeep
+# Cloudflare Worker local state and secrets
+.wrangler/
+.dev.vars
+.DS_Store

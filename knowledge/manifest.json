@@ -1,0 +1,7 @@
+{
+  "name": "roblox-brain-knowledge",
+  "version": "0.1.0",
+  "changelog": [
+    { "version": "0.1.0", "notes": "Initial starter entries: ui/scaling, security/remote-validation, datastores/safe-saving, engine-facts/deprecated-apis." }
+  ]
+}

@@ -1,0 +1,9 @@
+# Public default blocklist: generic terms that should never be in shipped knowledge.
+# Put YOUR game names, usernames, shop names etc. in blocklist.private.txt (gitignored),
+# NOT here, because this file is published.
+password
+api key
+apikey
+secret
+bearer
+.ROBLOSECURITY

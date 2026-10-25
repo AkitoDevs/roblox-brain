@@ -1,0 +1,2 @@
+# Keep LF everywhere: the knowledge front-matter parser expects "\n", and Windows autocrlf would break the build.
+* text=auto eol=lf

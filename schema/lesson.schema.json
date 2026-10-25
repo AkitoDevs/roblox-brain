@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Roblox Brain lesson",
+  "description": "A short, generic, anonymous lesson. No code, no names, no ids. Enforced server-side by lib/lesson.mjs.",
+  "type": "object",
+  "required": ["topic", "problem", "fix"],
+  "additionalProperties": false,
+  "properties": {
+    "topic": { "type": "string", "pattern": "^[a-z0-9\\-]+(/[a-z0-9\\-]+)*$", "maxLength": 60, "examples": ["ui/scaling"] },
+    "problem": { "type": "string", "maxLength": 300 },
+    "fix": { "type": "string", "maxLength": 400 },
+    "apis": { "type": "array", "maxItems": 10, "items": { "type": "string", "maxLength": 60 } },
+    "outcome": { "enum": ["ran_clean", "had_errors", "user_edited", "user_reverted", "unknown"] },
+    "engine_version": { "type": "string", "pattern": "^[0-9.]{1,12}$" }
+  }
+}

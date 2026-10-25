@@ -1,0 +1,8 @@
+# Copy to blocklist.private.txt (gitignored) and list anything personal, one per line.
+# Matching is case-insensitive substring. The build fails if a knowledge entry contains any of these,
+# and the server rejects any submitted lesson that contains them.
+# examples:
+# my-game-name
+# my-username
+# my-shop-name
+# my-city
