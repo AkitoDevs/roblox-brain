@@ -45,19 +45,35 @@ npm test             # lib tests + end-to-end MCP smoke test
 
 Try it locally with Claude Code: `claude --plugin-dir .` (or add this repo as a plugin marketplace entry), then ask Claude to build something for Roblox.
 
+## Turn on lesson sharing (for users)
+
+Lesson sharing is **OFF by default**. While it's off, nothing is ever sent anywhere; the plugin only reads its built-in knowledge.
+
+- **Turn it on:** tell Claude *"turn on roblox-brain lesson sharing"*. After that, when something generally useful comes up, Claude shows you the exact short lesson (topic, problem, fix, API names) and sends it **only if you say yes**.
+- **Turn it off:** tell Claude *"turn off roblox-brain lesson sharing"*. It stays off until you turn it on again.
+- **Check it:** ask *"is roblox-brain lesson sharing on?"*
+
+The setting is stored only on your computer, in `~/.roblox-brain/config.json` (`"share": true/false`), next to a random install id that isn't linked to any account. Lessons never contain code, game or user names, ids, links or emails; the plugin and the server both reject them.
+
 ## Day to day
 
 1. **Add knowledge:** write a new `knowledge/<area>/<name>.md` with front matter (`title, topic, scope: generic, source, tags`). Rewrite it in your own words; don't paste from your private skills or from contributors.
 2. **Release:** bump `knowledge/manifest.json`, `npm run build`, read the report, tag/push. Users get the update when they update the plugin (or immediately, once you host the server).
-3. **Review lessons (weekly):** `npm run triage`, then ask Claude to follow `triage/TRIAGE.md` on `candidates/`. Approve what's good.
+3. **Review lessons (weekly):** see below.
 
-## Hosting the shared inbox (next step)
+## Weekly lesson review
 
-Right now submissions go to the local `inbox/` folder (or wherever `RBRAIN_INBOX` points), which is perfect for testing. For real users you need one small public endpoint:
+Approved lessons from users go to the hosted inbox, **https://roblox-brain-inbox.rb-inbox-9m2q.workers.dev/lesson** (a Cloudflare Worker + D1; see `worker/README.md`). The plugin's `.mcp.json` points `RBRAIN_ENDPOINT` there. Without that variable, lessons go to the local `inbox/` folder instead (useful for testing).
 
-- A Cloudflare Worker (free tier) with `POST /lesson` that runs the **same** `validateLesson()` (copy `lib/lesson.mjs` + `lib/safety.mjs`), then appends to D1/KV. Reject anything over ~2 KB, add per-install and per-day limits, store no IPs.
-- Set `RBRAIN_ENDPOINT` in the plugin's `.mcp.json` env to that URL. Add a `GET /knowledge-version` later if you want live knowledge updates without reinstalling.
-- Never trust the client: the server-side validation must run again at the endpoint.
+Once a week (PowerShell, from the repo root):
+```
+cd worker; npm run export-inbox -- --remote; cd ..   # 1. new lessons from D1 -> inbox/<day>.jsonl (marks them exported)
+npm run triage                                       # 2. inbox -> candidates/ (re-validated, deduped, install counts)
+```
+3. Ask Claude: *"Follow triage/TRIAGE.md on candidates/"*. It proposes drafts in `candidates/drafts/` and a summary table; it never edits `knowledge/` itself.
+4. You approve: move good drafts into `knowledge/`, bump `knowledge/manifest.json`, run `npm run build`, release.
+
+If export says "no new lessons", there's nothing to do that week.
 
 ## Layout
 
