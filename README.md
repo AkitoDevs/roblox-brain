@@ -78,7 +78,7 @@ Claude Code then checks for a new release in the background after you start a se
 ## How it works
 
 ```mermaid
-flowchart LR
+flowchart TD
     A([You ask Claude for Roblox help]) --> B[Roblox Brain searches the knowledge]
     B --> C[Claude writes with proven practice]
     C -. optional short tip, filtered .-> D[Maintainer reviews]
