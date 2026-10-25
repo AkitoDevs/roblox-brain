@@ -9,9 +9,9 @@ tags: free model toolbox kit backdoor audit require loadstring getfenv processre
 
 Use this when a place is full of Toolbox kits ("ungroup in ServerScriptService" models, tutorial kits) and you want to learn from them, reuse parts or clear them out.
 
-**1. Inventory first, read-only.** For each top-level child of every service: descendant count, script count, lines of code and the most common classes. List every script with its path and line count. Skip well-known libraries (ProfileStore, Promise, Knit, Trove, Signal, Janitor, Zone, TopbarPlus and similar) except to note how they are wired. Read every README: it shows intended placement, required settings and which parts are deliberately blank.
+**1. Inventory first, read-only.** For each top-level child of every service: descendant count, script count, lines of code and the most common classes. List every script with its path and line count. Skip well-known open-source libraries (data stores, promises, signals, cleanup helpers, zones, top-bar UI and similar) except to note how they are wired. Read every README: it shows intended placement, required settings and which parts are deliberately blank.
 
-**2. Security scan.** Search all sources for require with a number, getfenv or setfenv, loadstring, InsertService:LoadAsset, HttpService post or request calls, webhook or discord strings, escaped byte strings, string.char or string.reverse chains, very long single lines, and unexpected TeleportService calls or purchase prompts. Report each hit with its line.
+**2. Security scan.** Search all sources for require with a number, getfenv or setfenv, loadstring, InsertService:LoadAsset, HttpService post or request calls, webhook URLs for chat services, escaped byte strings, string.char or string.reverse chains, very long single lines, and unexpected TeleportService calls or purchase prompts. Report each hit with its line.
 
 **3. Expect these traps.**
 - Tutorial kits often ship with code removed ("watch the video"), placeholder globals that are nil, and config modules that are referenced but missing.

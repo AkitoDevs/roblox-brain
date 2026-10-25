@@ -5,6 +5,10 @@ Preview URLs are off (`preview_urls = false`), so only this one address serves t
 
 `POST /lesson` runs the same gate as the MCP server, then appends to D1:
 
+0. **5 lessons per minute per connection** → 429 after that (Workers Rate Limiting binding `RATE_LIMITER`).
+   The counter key is a SHA-256 hash of the connecting address; it is never stored, logged or returned.
+   Counters are per Cloudflare location and eventually consistent, so a burst fired in the same instant can
+   slip a few extra through (tested live: 10 simultaneous requests all passed; 12 sequential ones gave 5 × 201 then 429s).
 1. Body over **2 KB** → 413 (checked on Content-Length and while reading the stream).
 2. Must be a JSON object with a 16-hex-char `install` id → else 400.
 3. `validateLesson()` from `src/lib/lesson.mjs`, a **byte-identical copy** of `../lib/lesson.mjs` + `../lib/safety.mjs`

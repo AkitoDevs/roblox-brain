@@ -1,6 +1,7 @@
 // POST /lesson: the hosted copy of the MCP server's gate. Never trusts the client:
-// size cap -> JSON -> install id shape -> validateLesson() (same rules as lib/) -> per-install daily cap -> D1.
-// Stores no IP and no timestamp (date only). Nothing here reads request headers beyond Content-Length.
+// per-connection burst limit -> size cap -> JSON -> install id shape -> validateLesson() (same rules as lib/)
+// -> per-install daily cap -> D1. Stores no IP and no timestamp (date only). The only headers read are
+// Content-Length and CF-Connecting-IP, the latter hashed into a rate-limit key and never stored.
 import { validateLesson } from "./lib/lesson.mjs";
 
 export const MAX_BODY = 2048; // bytes
@@ -40,10 +41,23 @@ async function readCapped(request, max) {
   return new TextDecoder().decode(buf);
 }
 
+async function connectionKey(request) {
+  const addr = request.headers.get("cf-connecting-ip") ?? "";
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`rbrain-rl:${addr}`));
+  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 export async function handle(request, env, terms, today = new Date().toISOString().slice(0, 10)) {
   const { pathname } = new URL(request.url);
   if (pathname !== "/lesson") return json(404, { ok: false, error: "not found" });
   if (request.method !== "POST") return json(405, { ok: false, error: "POST only" });
+
+  // Per-connection burst limit (Workers Rate Limiting binding). The key is a SHA-256 hash of the connecting
+  // address, used only as the counter key: it is never stored in D1, logged or returned.
+  if (env.RATE_LIMITER) {
+    const { success } = await env.RATE_LIMITER.limit({ key: await connectionKey(request) });
+    if (!success) return json(429, { ok: false, error: "too many lessons, try again in a minute" });
+  }
 
   const raw = await readCapped(request, MAX_BODY);
   if (raw === null) return json(413, { ok: false, error: `body over ${MAX_BODY} bytes` });

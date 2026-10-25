@@ -7,7 +7,7 @@ tags: vfx finisher ultimate blast beam cinematic beat sheet charge contact impac
 ---
 # Finisher and ultimate shots
 
-A big finisher fails when it is "just a beam": a beam alone is only the fire beat. Plan the whole shot first. Parts of this are from study and stills-only tests; judge the result in motion.
+A big finisher fails when it is only a beam: a beam alone is only the fire beat. Plan the whole shot first. Parts of this are from study and stills-only tests; judge the result in motion.
 
 **1. Write the beat sheet with times:** charge (the tell), an anticipation snap, fire, contact (impact frame plus hit-stop), blast, and an aftermath hold.
 

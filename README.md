@@ -30,7 +30,8 @@ A Claude plugin + MCP server that gives anyone's Claude your curated, **generic*
 | Only `topic, problem, fix, apis, outcome, engine_version` are accepted; unknown fields are dropped | `lib/lesson.mjs` |
 | Max 300/400 chars, **no code fences, links, emails, paths, ids, @handles, token-like strings**, plus your private blocklist | `lib/lesson.mjs`, `lib/safety.mjs` |
 | Stored record = lesson + random install id + **date only** (no IP, timestamps, account) | `server/index.mjs` |
-| 20 lessons per install per day | `server/index.mjs` |
+| 20 lessons per install per day | `server/index.mjs`, `worker/src/handler.mjs` |
+| 5 lessons per minute per connection on the hosted inbox; the key is a hash of the address, never stored | `worker/src/handler.mjs`, `worker/wrangler.toml` |
 | Inbox is **untrusted**; re-validated on triage; nothing auto-merges into `knowledge/` | `tools/triage.mjs`, `triage/TRIAGE.md` |
 | Your private stuff never ships: it lives in `blocklist.private.txt` (gitignored) and your private projects are simply never ported | `.gitignore`, `tools/build.mjs` |
 
@@ -38,12 +39,32 @@ A Claude plugin + MCP server that gives anyone's Claude your curated, **generic*
 
 You need [Claude Code](https://claude.com/claude-code) and Node.js 18 or newer. Nothing else: the MCP server ships as one bundled file (`server/bundle.mjs`), so there is no `npm install`.
 
+The marketplace is named **`roblox-brain`** (from `.claude-plugin/marketplace.json`) and lists one plugin, also named **`roblox-brain`**. In a terminal:
+
 ```bash
-claude plugin marketplace add <github-owner>/roblox-brain
+claude plugin marketplace add AkitoDevs/roblox-brain
 claude plugin install roblox-brain@roblox-brain
 ```
 
-Replace `<github-owner>/roblox-brain` with the repository you were given (the repo is private, so your GitHub account needs access and git must be signed in to GitHub). Inside Claude Code the same steps are `/plugin marketplace add <github-owner>/roblox-brain` and `/plugin install roblox-brain@roblox-brain`. Restart Claude Code, then ask it to build something for Roblox: it searches the knowledge first. Update later with `claude plugin marketplace update roblox-brain` and `claude plugin update roblox-brain@roblox-brain`.
+Or inside Claude Code:
+
+```
+/plugin marketplace add AkitoDevs/roblox-brain
+/plugin install roblox-brain@roblox-brain
+```
+
+Restart Claude Code, then ask it to build something for Roblox: it searches the knowledge first. To update later:
+
+```bash
+claude plugin marketplace update roblox-brain
+claude plugin update roblox-brain@roblox-brain
+```
+
+While the repository is private, your GitHub account needs access to it and git must be signed in to GitHub.
+
+## License
+
+MIT, see [LICENSE](LICENSE). The knowledge entries in `knowledge/` are part of this repository and are included under the same MIT license.
 
 ## Setup (for the maintainer)
 

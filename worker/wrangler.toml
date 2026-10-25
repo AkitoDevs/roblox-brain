@@ -12,6 +12,16 @@ preview_urls = false
 [observability]
 enabled = false
 
+# Per-connection burst limit: 5 lessons per 60 s per connection, counted per Cloudflare location.
+# The key is a hash of the connecting address and is never stored (see src/handler.mjs).
+[[ratelimits]]
+name = "RATE_LIMITER"
+namespace_id = "4201"
+
+  [ratelimits.simple]
+  limit = 5
+  period = 60
+
 [[d1_databases]]
 binding = "DB"
 database_name = "rbrain-inbox"

@@ -90,4 +90,17 @@ assert.equal((await handle(post(good), env, terms, "2026-10-26")).status, 201);
 assert.equal((await handle(new Request(URL_), env, terms)).status, 405);
 assert.equal((await handle(new Request("https://inbox.example/other", { method: "POST" }), env, terms)).status, 404);
 
-console.log("worker tests passed: lib copies match, validation, 2 KB cap, install id, daily cap, stored shape, routing");
+// --- per-connection burst limit: key is a hash (never the raw address); over the limit = 429 and nothing stored
+const seen = [];
+const limiter = (max) => { const n = new Map(); return { limit: async ({ key }) => { seen.push(key); n.set(key, (n.get(key) ?? 0) + 1); return { success: n.get(key) <= max }; } }; };
+env = { DB: fakeDB(), RATE_LIMITER: limiter(2) };
+const fromAddr = (addr) => post(good, { "cf-connecting-ip": addr });
+assert.equal((await handle(fromAddr("203.0.113.7"), env, terms, "2026-10-25")).status, 201);
+assert.equal((await handle(fromAddr("203.0.113.7"), env, terms, "2026-10-25")).status, 201);
+assert.equal((await handle(fromAddr("203.0.113.7"), env, terms, "2026-10-25")).status, 429);
+assert.equal((await handle(fromAddr("198.51.100.9"), env, terms, "2026-10-25")).status, 201, "other connections unaffected");
+assert.equal(env.DB.rows.length, 3, "rate-limited request not stored");
+assert.ok(seen.every((k) => /^[0-9a-f]{64}$/.test(k) && !k.includes("203")), "limiter only ever sees a hash");
+assert.ok(env.DB.rows.every((r) => !JSON.stringify(r).includes("203.0.113.7")), "no address stored");
+
+console.log("worker tests passed: lib copies match, validation, 2 KB cap, install id, daily cap, stored shape, routing, burst limit");

@@ -13,9 +13,9 @@ tags: ui simulator item card rarity tabs rewards daily rebirth offer hud popup h
 
 **Component recipes**
 - **Item card:** icon tile in a rarity-coloured frame, white name with a small coloured category tag, a dim stock line, a green price, a green Buy (grey when unavailable) and a magenta Robux pill.
-- **Rarity tabs:** a ladder such as normal (silver), gold, diamond (cyan), candy (pink), lava (orange), rainbow; cards reuse their tab's gradient.
-- **Rewards grid:** each cell has three states (a green "Redeem!", a white countdown, a check when claimed), a "0/12 claimed" counter and a "Ready!" HUD button.
+- **Rarity tabs:** a ladder of named tiers, each with its own colour (for example silver, gold, cyan, pink, orange, then rainbow for the top tier); cards reuse their tab's gradient.
+- **Rewards grid:** each cell has three states (a green claim button, a white countdown, a check when claimed), a claimed-out-of-total counter and a HUD button that lights up when something is ready.
 - **Daily rewards:** days 1 to 6 as small cards, day 7 as a big special card.
-- **Rebirth:** "Rebirth N → N+1" as two green pills with an arrow, a red warning line, a progress bar with "Cash: x / y", the rebirth button and a Robux skip button.
-- **Offer card:** a short hook ("ONLY 3", "X2 Cash", "PERMANENT"), a rotating sunburst behind it and a rainbow-stroke border.
+- **Rebirth:** the current and next rebirth level as two green pills with an arrow between them, a red warning line, a progress bar showing current currency against the requirement, the rebirth button and a Robux skip button.
+- **Offer card:** a short hook (limited quantity, a multiplier, or "permanent"), a rotating sunburst behind it and a rainbow-stroke border.
 - **HUD:** a two-column left button grid with notify badges, currency pills bottom-left, big gradient money text, boost badges bottom-right, top tabs.

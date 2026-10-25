@@ -3,7 +3,7 @@ title: Architecture and feel for collect and tycoon games
 topic: design/collect-tycoon-architecture
 scope: generic
 source: maintainer-skill
-tags: tycoon architecture processreceipt bootstrap leaderstats profile session lock collectionservice income server input feedback asmr pad press
+tags: tycoon architecture processreceipt bootstrap leaderstats profile session lock collectionservice income server input feedback pad press
 ---
 # Architecture and feel for collect and tycoon games
 

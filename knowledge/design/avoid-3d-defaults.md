@@ -7,7 +7,7 @@ tags: design art direction defaults baseplate saturated neon primitives grid sca
 ---
 # Directed, not assembled: avoiding 3D defaults
 
-A game can work and still look "underwhelming" because it was assembled rather than directed: no stated look, default lighting on a bare baseplate, saturated colour on every surface, and detail placed before mood.
+A game can work and still look flat and unappealing because it was assembled rather than directed: no stated look, default lighting on a bare baseplate, saturated colour on every surface, and detail placed before mood.
 
 **Decide the look first.** Write one line before building: what kind of scene, for whom and on what device, in what visual language and world (for example warm stylised fantasy, neon night sci-fi, cozy toy-like simulator). Take it from the request, references and existing assets, not habit. A pinned style, palette or reference always wins.
 
