@@ -54,8 +54,10 @@ try {
   const first = await s.call("search_knowledge", { query: "save player data datastore" });
   assert.match(first, /\(datastores\/safe-saving\)/);
   assert.match(await s.call("search_knowledge", { query: "save player data datastore" }), /^Already answered for a near-identical search/);
-  assert.doesNotMatch(await s.call("get_skill", { id: "datastores/safe-saving" }), /already provided/);
-  assert.match(await s.call("get_skill", { id: "datastores/safe-saving" }), /already provided in full earlier/);
+  assert.doesNotMatch(first, /\(datastores\/safe-saving\) \[excerpt\]/, "the best match comes back in full");
+  assert.match(await s.call("get_skill", { id: "datastores/safe-saving" }), /already provided in full earlier/, "the full best match isn't resent");
+  assert.doesNotMatch(await s.call("get_skill", { id: "ui/no-blurry-ui" }), /already provided/);
+  assert.match(await s.call("get_skill", { id: "ui/no-blurry-ui" }), /already provided in full earlier/);
   await s.client.close();
 
   // (c) entry length
