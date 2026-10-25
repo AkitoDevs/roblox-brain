@@ -1,5 +1,7 @@
 # Roblox Brain
 
+> Roblox Brain is meant to improve everyone's Claude for Roblox work: scripting, VFX, UI, lighting, modeling and more. It is in early development, so nothing is guaranteed, but it should work. If something doesn't, please open an issue.
+
 A Claude plugin + MCP server that gives anyone's Claude your curated, **generic** Roblox knowledge. After a task it may share one short, automatically filtered tip with the maintainer, who reviews it and may fold the idea into the next release. Sharing is on by default, shown in a notice once per project, and easy to turn off. See [PRIVACY.md](PRIVACY.md).
 
 ## How it works
