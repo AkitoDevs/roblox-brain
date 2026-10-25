@@ -13,3 +13,5 @@ candidates/*
 .wrangler/
 .dev.vars
 .DS_Store
+# Claude Code's own local permission settings for this machine
+.claude/settings.local.json
