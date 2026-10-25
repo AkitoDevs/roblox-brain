@@ -1,8 +1,12 @@
-# Roblox Brain
+# Roblox Brain: maintainer notes
+
+> This page holds the internals and maintainer documentation. For what Roblox Brain is, how to install it and how sharing works, see the [README](../README.md).
+
+## About
 
 > Roblox Brain is meant to improve everyone's Claude for Roblox work: scripting, VFX, UI, lighting, modeling and more. It is in early development, so nothing is guaranteed, but it should work. If something doesn't, please open an issue.
 
-A Claude plugin + MCP server that gives anyone's Claude your curated, **generic** Roblox knowledge. After a task it may share one short, automatically filtered tip with the maintainer, who reviews it and may fold the idea into the next release. Sharing is on by default, shown in a notice once per project, and easy to turn off. See [PRIVACY.md](PRIVACY.md).
+A Claude plugin + MCP server that gives anyone's Claude your curated, **generic** Roblox knowledge. After a task it may share one short, automatically filtered tip with the maintainer, who reviews it and may fold the idea into the next release. Sharing is on by default, shown in a notice once per project, and easy to turn off. See [PRIVACY.md](../PRIVACY.md).
 
 ## How it works
 
@@ -25,7 +29,7 @@ A Claude plugin + MCP server that gives anyone's Claude your curated, **generic*
 
 ## Privacy model
 
-The full, plain-language version for users is [PRIVACY.md](PRIVACY.md).
+The full, plain-language version for users is [PRIVACY.md](../PRIVACY.md).
 
 | Rule | Where enforced |
 |---|---|
@@ -91,7 +95,7 @@ To see it yourself, run `/context` in Claude Code and look for `roblox-brain` un
 
 ## License
 
-MIT, see [LICENSE](LICENSE). The knowledge entries in `knowledge/` are part of this repository and are included under the same MIT license.
+MIT, see [LICENSE](../LICENSE). The knowledge entries in `knowledge/` are part of this repository and are included under the same MIT license.
 
 ## Setup (for the maintainer)
 
@@ -120,7 +124,7 @@ Say any of these in Claude Code:
 - **"show my shared tips"**: lists your sharing history (`~/.roblox-brain/sent-lessons.md`).
 - **"delete my shared tips"**: deletes everything you've shared from the maintainer's copy.
 
-The older phrases ("turn off roblox-brain lesson sharing", "show roblox-brain sent lessons", "delete my roblox-brain lessons") still work. What a tip contains, what it's designed to leave out, how long it's kept and how deleting works are all in [PRIVACY.md](PRIVACY.md).
+The older phrases ("turn off roblox-brain lesson sharing", "show roblox-brain sent lessons", "delete my roblox-brain lessons") still work. What a tip contains, what it's designed to leave out, how long it's kept and how deleting works are all in [PRIVACY.md](../PRIVACY.md).
 
 ## Day to day
 
