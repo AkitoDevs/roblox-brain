@@ -19,7 +19,11 @@ Run the weekly roblox-brain lesson review with the maintainer. Work from the rep
 5. **Never ask the maintainer to paste a password, API token or key**, and never put one in a command or file. Login only ever happens in their browser.
 
 ## Step 1: export and triage
-1. Run `cd worker; npm run export-inbox -- --remote; cd ..` (PowerShell) or `(cd worker && npm run export-inbox -- --remote)` (bash). This copies new lessons from the Cloudflare D1 inbox into `inbox/<day>.jsonl` and marks them exported.
+1. Run `cd worker; npm run export-inbox -- --remote; cd ..` (PowerShell) or `(cd worker && npm run export-inbox -- --remote)` (bash). This also does the retention housekeeping that PRIVACY.md promises:
+   - applies users' "delete my shared tips" requests to the local copies in `inbox/` and `inbox/processed/`;
+   - deletes anything older than 90 days from the server and from `inbox/processed/` (the Worker also does this daily);
+   - copies new lessons into `inbox/<day>.jsonl` and then **deletes them from the server**, so nothing stays there once taken for review.
+   Report its housekeeping line in the final report (counts only).
 2. Run `npm run triage`. Note its summary line (`Triage: N submissions -> X candidates, Y rejected`).
 
 ## Step 2: nothing new? stop

@@ -12,6 +12,15 @@ preview_urls = false
 [observability]
 enabled = false
 
+# Shutdown switch: "active" or "ended". When "ended", POST /lesson and /delete answer 410 and plugins turn sharing
+# off. Set by the /sunset command.
+[vars]
+SERVICE_STATUS = "active"
+
+# Daily retention cleanup at 03:17 UTC: deletes lessons and deletion requests older than 90 days.
+[triggers]
+crons = ["17 3 * * *"]
+
 # Per-connection burst limit: 5 lessons per 60 s per connection, counted per Cloudflare location.
 # The key is a hash of the connecting address and is never stored (see src/handler.mjs).
 [[ratelimits]]

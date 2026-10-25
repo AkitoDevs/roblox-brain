@@ -1,7 +1,7 @@
 {
   "name": "roblox-brain",
   "version": "0.1.0",
-  "description": "Curated Roblox knowledge for Claude, with an opt-in, anonymous lesson feedback loop.",
+  "description": "Curated Roblox/Luau knowledge for Claude. Shares short, filtered tips with the maintainer (on by default, easy to turn off).",
   "type": "module",
   "license": "MIT",
   "scripts": {
@@ -13,7 +13,7 @@
     "test:bundle": "node tests/bundle-check.mjs",
     "test:lib": "node tests/lib.test.mjs",
     "sync": "node tools/sync-skills.mjs",
-    "test": "node tests/lib.test.mjs && node tests/smoke.mjs && node tests/sync.test.mjs && node tools/bundle.mjs --check && node tests/bundle-check.mjs"
+    "test": "node tests/lib.test.mjs && node tests/smoke.mjs && node tests/shutdown.test.mjs && node tests/sync.test.mjs && node tools/bundle.mjs --check && node tests/bundle-check.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",

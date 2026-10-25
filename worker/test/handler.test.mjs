@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import assert from "node:assert/strict";
 import { fileURLToPath } from "node:url";
-import { handle, parseTerms, MAX_PER_DAY } from "../src/handler.mjs";
+import { handle, parseTerms, retention, MAX_PER_DAY } from "../src/handler.mjs";
 import { FILES } from "../scripts/sync-lib.mjs";
 
 const worker = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -15,18 +15,27 @@ for (const [from, to] of FILES) {
   assert.equal(fs.readFileSync(path.join(worker, "src/lib", to), "utf8"), fs.readFileSync(path.join(root, from), "utf8"), `worker/src/lib/${to} drifted from ${from}: run npm run sync-lib`);
 }
 
-// In-memory D1 stand-in: understands only the handler's one INSERT ... WHERE count < cap.
+// In-memory D1 stand-in: understands only the handler's own statements.
 function fakeDB() {
-  const rows = [];
+  const rows = [], requests = [];
+  const remove = (list, pred) => { const before = list.length; for (let i = list.length - 1; i >= 0; i--) if (pred(list[i])) list.splice(i, 1); return before - list.length; };
   return {
     rows,
+    requests,
     prepare: (sql) => ({
-      bind: (install, day, lesson, cap) => ({
+      bind: (...a) => ({
         run: async () => {
-          assert.match(sql, /INSERT INTO lessons/);
-          if (rows.filter((r) => r.install === install && r.day === day).length >= cap) return { meta: { changes: 0 } };
-          rows.push({ install, day, lesson });
-          return { meta: { changes: 1 } };
+          if (/^INSERT INTO lessons/.test(sql.trim())) {
+            const [install, day, lesson, cap] = a;
+            if (rows.filter((r) => r.install === install && r.day === day).length >= cap) return { meta: { changes: 0 } };
+            rows.push({ install, day, lesson });
+            return { meta: { changes: 1 } };
+          }
+          if (/^DELETE FROM lessons WHERE install/.test(sql)) return { meta: { changes: remove(rows, (r) => r.install === a[0]) } };
+          if (/^INSERT INTO deletion_requests/.test(sql)) { requests.push({ install: a[0], day: a[1] }); return { meta: { changes: 1 } }; }
+          if (/^DELETE FROM lessons WHERE day </.test(sql)) return { meta: { changes: remove(rows, (r) => r.day < a[0]) } };
+          if (/^DELETE FROM deletion_requests WHERE day </.test(sql)) return { meta: { changes: remove(requests, (r) => r.day < a[0]) } };
+          throw new Error(`unexpected SQL: ${sql}`);
         },
       }),
     }),
@@ -103,4 +112,36 @@ assert.equal(env.DB.rows.length, 3, "rate-limited request not stored");
 assert.ok(seen.every((k) => /^[0-9a-f]{64}$/.test(k) && !k.includes("203")), "limiter only ever sees a hash");
 assert.ok(env.DB.rows.every((r) => !JSON.stringify(r).includes("203.0.113.7")), "no address stored");
 
-console.log("worker tests passed: lib copies match, validation, 2 KB cap, install id, daily cap, stored shape, routing, burst limit");
+// --- POST /delete: removes every row for that install and nothing else, records the request
+env = { DB: fakeDB() };
+const other = "fedcba9876543210";
+for (const id of [install, install, other]) await handle(post({ ...good, install: id }), env, terms, "2026-10-25");
+const delReq = (body) => new Request("https://inbox.example/delete", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+let res = await handle(delReq({ install }), env, terms, "2026-10-25");
+assert.equal(res.status, 200);
+assert.deepEqual(await res.json(), { ok: true, deleted: 2 });
+assert.deepEqual(env.DB.rows.map((r) => r.install), [other], "only that install's rows were deleted");
+assert.deepEqual(env.DB.requests, [{ install, day: "2026-10-25" }]);
+assert.equal((await handle(delReq({ install: "not-an-id" }), env, terms)).status, 400);
+assert.equal((await handle(delReq({}), env, terms)).status, 400);
+assert.equal((await handle(new Request("https://inbox.example/delete"), env, terms)).status, 405);
+
+// --- shutdown switch: SERVICE_STATUS "ended" answers 410 on both endpoints and stores nothing
+env = { DB: fakeDB(), SERVICE_STATUS: "ended" };
+for (const r of [post(good), delReq({ install })]) {
+  const out = await handle(r, env, terms, "2026-10-25");
+  assert.equal(out.status, 410);
+  assert.deepEqual(await out.json(), { ok: false, error: "The Roblox Brain sharing service has ended." });
+}
+assert.equal(env.DB.rows.length, 0);
+env = { DB: fakeDB(), SERVICE_STATUS: "active" };
+assert.equal((await handle(post(good), env, terms, "2026-10-25")).status, 201);
+
+// --- retention: rows and deletion requests older than 90 days are deleted, newer ones kept
+env = { DB: fakeDB() };
+env.DB.rows.push({ install, day: "2026-07-26", lesson: "{}" }, { install, day: "2026-07-27", lesson: "{}" });
+env.DB.requests.push({ install, day: "2026-01-01" });
+assert.deepEqual(await retention(env, "2026-10-25"), { lessons: 1, requests: 1 });
+assert.deepEqual(env.DB.rows.map((r) => r.day), ["2026-07-27"]);
+
+console.log("worker tests passed: lib copies match, validation, 2 KB cap, install id, daily cap, stored shape, routing, burst limit, delete, shutdown switch, retention");

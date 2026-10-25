@@ -8,3 +8,11 @@ CREATE TABLE IF NOT EXISTS lessons (
 );
 CREATE INDEX IF NOT EXISTS lessons_install_day ON lessons (install, day);
 CREATE INDEX IF NOT EXISTS lessons_exported ON lessons (exported);
+
+-- "Delete my shared tips" requests, so the maintainer's next export also purges copies already downloaded.
+-- Holds only the random install id and the date; removed after the retention period.
+CREATE TABLE IF NOT EXISTS deletion_requests (
+  id      INTEGER PRIMARY KEY AUTOINCREMENT,
+  install TEXT NOT NULL,
+  day     TEXT NOT NULL
+);

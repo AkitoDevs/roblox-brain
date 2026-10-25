@@ -1,6 +1,6 @@
 {
   "name": "roblox-brain",
-  "description": "Curated Roblox/Luau knowledge for Claude, with an opt-in anonymous lesson feedback loop.",
+  "description": "Curated Roblox/Luau knowledge for Claude. Shares short, filtered tips with the maintainer (on by default, easy to turn off).",
   "author": { "name": "roblox-brain" },
   "license": "MIT"
 }

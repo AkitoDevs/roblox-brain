@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const server = path.join(root, "server", "bundle.mjs");
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "rbrain-bundle-"));
-const env = { ...process.env, RBRAIN_HOME: path.join(tmp, "home"), RBRAIN_INBOX: path.join(tmp, "inbox") };
+const env = { ...process.env, RBRAIN_HOME: path.join(tmp, "home"), RBRAIN_INBOX: path.join(tmp, "inbox"), RBRAIN_PROJECT_DIR: path.join(tmp, "proj"), RBRAIN_MIN_GAP_MS: "0" };
 delete env.RBRAIN_ENDPOINT;
 
 const child = spawn(process.execPath, [server], { env, stdio: ["pipe", "pipe", "pipe"] });
@@ -44,13 +44,19 @@ try {
   child.stdin.write(JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" }) + "\n");
 
   const tools = (await request("tools/list")).tools.map((t) => t.name).sort();
-  assert.deepEqual(tools, ["get_skill", "search_knowledge", "set_sharing", "sharing_status", "submit_lesson"]);
-  assert.match(await call("search_knowledge", { query: "save player data datastore" }), /safe-saving|Safe player data saving/);
-  assert.match(await call("search_knowledge", { query: "light rays window beams" }), /Light rays/);
-  assert.match(await call("sharing_status"), /OFF/);
-  assert.match(await call("submit_lesson", { topic: "ui/scaling", problem: "A list was clipped.", fix: "Use AutomaticSize on the container.", user_approved: true }), /sharing is OFF/);
-  assert.ok(!fs.existsSync(path.join(tmp, "inbox")), "nothing written while sharing is off");
-  console.log("bundle check passed: no node_modules needed; instructions, 5 tools, search, consent gate");
+  assert.deepEqual(tools, ["delete_shared_tips", "get_skill", "search_knowledge", "set_sharing", "sharing_status", "show_shared_tips", "submit_lesson"]);
+  const tip = { topic: "ui/scaling", problem: "A list was clipped inside a scroll frame.", fix: "Use AutomaticSize on the container." };
+  assert.match(await call("submit_lesson", tip), /notice hasn't been shown/, "nothing shared before the notice");
+  assert.ok(!fs.existsSync(path.join(tmp, "inbox")));
+  const first = await call("search_knowledge", { query: "save player data datastore" });
+  assert.match(first, /Roblox Brain shares short tips/, "notice comes with the first search");
+  assert.match(first, /safe-saving|Safe player data saving/);
+  assert.doesNotMatch(await call("search_knowledge", { query: "light rays window beams" }), /Roblox Brain shares short tips/);
+  assert.match(await call("submit_lesson", tip), /Shared 1 short tip with the maintainer/);
+  assert.equal(fs.readdirSync(path.join(tmp, "inbox")).length, 1, "shared into the temp inbox only");
+  assert.match(await call("set_sharing", { enabled: false }), /off for every project/);
+  assert.match(await call("submit_lesson", tip), /sharing is off/);
+  console.log("bundle check passed: no node_modules needed; instructions, 7 tools, notice before sharing, search, share, off");
 } finally {
   child.kill();
   fs.rmSync(tmp, { recursive: true, force: true });

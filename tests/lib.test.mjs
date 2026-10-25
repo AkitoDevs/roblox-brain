@@ -31,6 +31,18 @@ const bad = {
   "too long": { ...good, problem: "x".repeat(301) },
   "missing fix": { topic: "ui/scaling", problem: "something" },
   "token-like": { ...good, fix: "key is abcdefghijklmnopqrstuvwxyz0123456789ABCD" },
+  // stricter rules for tips shared without a person reading each one
+  "inline code": { ...good, fix: "Set `AutomaticSize` on the frame" },
+  "code-like syntax": { ...good, fix: "Write frame.Size = UDim2.new(1, 0); then reparent" },
+  "quoted text": { ...good, problem: "The button labelled \"Buy Sword Pack\" was clipped" },
+  "file name": { ...good, fix: "Moved the logic into ShopController.lua" },
+  "domain name": { ...good, fix: "Found the answer on example.org" },
+  "www link": { ...good, fix: "See www.example for details" },
+  "IP address": { ...good, problem: "Server 10.0.0.12 timed out" },
+  "5-digit number": { ...good, problem: "Asset 48213 failed to load" },
+  "something named": { ...good, problem: "A model called Dragonkeep broke the layout" },
+  "own project": { ...good, problem: "In my game the list was clipped" },
+  "relative path": { ...good, fix: "Look in ./src/client for the script" },
 };
 for (const [label, l] of Object.entries(bad)) assert.equal(validateLesson(l).ok, false, `should reject: ${label}`);
 

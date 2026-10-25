@@ -47,16 +47,29 @@ async function connectionKey(request) {
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+export const RETENTION_DAYS = 90;
+const daysAgo = (today, n) => new Date(Date.parse(`${today}T00:00:00Z`) - n * 86400000).toISOString().slice(0, 10);
+
+/** Daily cron: delete lessons (and pending deletion requests) older than RETENTION_DAYS, reviewed or not. */
+export async function retention(env, today = new Date().toISOString().slice(0, 10)) {
+  const cutoff = daysAgo(today, RETENTION_DAYS);
+  const a = await env.DB.prepare("DELETE FROM lessons WHERE day < ?1").bind(cutoff).run();
+  const b = await env.DB.prepare("DELETE FROM deletion_requests WHERE day < ?1").bind(cutoff).run();
+  return { lessons: a.meta?.changes ?? 0, requests: b.meta?.changes ?? 0 };
+}
+
 export async function handle(request, env, terms, today = new Date().toISOString().slice(0, 10)) {
   const { pathname } = new URL(request.url);
-  if (pathname !== "/lesson") return json(404, { ok: false, error: "not found" });
+  if (pathname !== "/lesson" && pathname !== "/delete") return json(404, { ok: false, error: "not found" });
   if (request.method !== "POST") return json(405, { ok: false, error: "POST only" });
+  // Shutdown switch (wrangler.toml [vars] SERVICE_STATUS, "active" by default). Plugins turn sharing off on a 410.
+  if (env.SERVICE_STATUS === "ended") return json(410, { ok: false, error: "The Roblox Brain sharing service has ended." });
 
   // Per-connection burst limit (Workers Rate Limiting binding). The key is a SHA-256 hash of the connecting
   // address, used only as the counter key: it is never stored in D1, logged or returned.
   if (env.RATE_LIMITER) {
     const { success } = await env.RATE_LIMITER.limit({ key: await connectionKey(request) });
-    if (!success) return json(429, { ok: false, error: "too many lessons, try again in a minute" });
+    if (!success) return json(429, { ok: false, error: "too many requests, try again in a minute" });
   }
 
   const raw = await readCapped(request, MAX_BODY);
@@ -68,6 +81,15 @@ export async function handle(request, env, terms, today = new Date().toISOString
 
   const install = body.install;
   if (typeof install !== "string" || !INSTALL_RE.test(install)) return json(400, { ok: false, error: "invalid install id" });
+
+  // POST /delete {install}: delete every lesson from this install and nothing else. The random install id, which
+  // only that computer's local config holds, is the proof. A request record (install + date) lets the maintainer's
+  // next export purge copies already downloaded for review; it is removed after RETENTION_DAYS.
+  if (pathname === "/delete") {
+    const del = await env.DB.prepare("DELETE FROM lessons WHERE install = ?1").bind(install).run();
+    await env.DB.prepare("INSERT INTO deletion_requests (install, day) VALUES (?1, ?2)").bind(install, today).run();
+    return json(200, { ok: true, deleted: del.meta?.changes ?? 0 });
+  }
 
   const { ok, errors, lesson } = validateLesson(body, terms);
   if (!ok) return json(400, { ok: false, errors });
