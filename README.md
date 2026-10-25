@@ -68,8 +68,6 @@ claude plugin marketplace update roblox-brain
 claude plugin update roblox-brain@roblox-brain
 ```
 
-While the repository is private, your GitHub account needs access to it and git must be signed in to GitHub.
-
 ### Get new knowledge automatically
 
 Auto-update is **off by default** for marketplaces like this one (Claude Code only turns it on for Anthropic's official marketplaces). Turn it on once:
