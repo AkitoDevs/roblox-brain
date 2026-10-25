@@ -11,6 +11,8 @@
     "db:init:local": "wrangler d1 execute rbrain-inbox --local --file schema.sql",
     "db:init:remote": "wrangler d1 execute rbrain-inbox --remote --file schema.sql",
     "export-inbox": "node scripts/export-inbox.mjs",
+    "auth-check": "node scripts/auth-check.mjs",
+    "login": "wrangler login",
     "deploy": "wrangler deploy"
   },
   "devDependencies": {

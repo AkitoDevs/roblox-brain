@@ -62,6 +62,15 @@ claude plugin update roblox-brain@roblox-brain
 
 While the repository is private, your GitHub account needs access to it and git must be signed in to GitHub.
 
+### Get new knowledge automatically
+
+Auto-update is **off by default** for marketplaces like this one (Claude Code only turns it on for Anthropic's official marketplaces). Turn it on once:
+
+1. In Claude Code, run `/plugin` and open the **Marketplaces** tab.
+2. Select **roblox-brain**, then select **Enable auto-update**.
+
+From then on, Claude Code checks for a new release in the background after you start a session and updates the plugin on disk. The new knowledge loads the next time you start Claude Code (or right away with `/reload-plugins`). Auto-update stays off if you've set `DISABLE_AUTOUPDATER`, `DISABLE_UPDATES` or `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`.
+
 ## License
 
 MIT, see [LICENSE](LICENSE). The knowledge entries in `knowledge/` are part of this repository and are included under the same MIT license.
@@ -94,6 +103,13 @@ The setting is stored only on your computer, in `~/.roblox-brain/config.json` (`
 1. **Add knowledge:** write a new `knowledge/<area>/<name>.md` with front matter (`title, topic, scope: generic, source, tags`). Rewrite it in your own words from the generic parts of your skills (`source: maintainer-skill`); never from personal skills, third-party material or contributors' wording.
 2. **Release:** bump `knowledge/manifest.json`, `npm run build`, read the report, tag/push. Users get the update when they update the plugin (or immediately, once you host the server).
 3. **Review lessons (weekly):** see below.
+
+## Maintainer commands (in Claude Code, from this folder)
+
+- **`/review-lessons`**: checks your Cloudflare login (opens a browser tab to log in if it expired), exports new lessons, triages them, recommends approve or reject, stops for your choice, drafts the entry and skill changes, applies only what you approve, commits locally and asks before pushing. It ends by telling you whether your skills changed since the last sync.
+- **`/sync-skills`**: brings changes from your own Roblox skills into `knowledge/`. It classifies new and changed skills automatically (personal and third-party ones are left out, and when in doubt it leaves things out), keeps only generic lines, rewrites them in your words, runs the blocklist, name and build checks, applies the changes, commits locally and shows one summary. It never pushes without asking. Its state (`triage/sync-map.local.json`, `triage/skill-snapshots/`, `triage/name-scan.local.txt`) is private and gitignored.
+
+Releases reach users through auto-update because the plugin doesn't pin a version: every pushed commit is a new version.
 
 ## Weekly lesson review
 

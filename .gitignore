@@ -4,6 +4,11 @@ dist/
 blocklist.private.txt
 # PRIVATE: where your own skills live on this machine (used by triage to propose skill edits)
 triage/skills.local.json
+# PRIVATE: which entries came from which of your skills, and snapshots of those skills at the last sync
+triage/sync-map.local.json
+triage/skill-snapshots/
+# names of other games, creators and brands that must not appear in synced entries (kept local)
+triage/name-scan.local.txt
 # Raw submissions and review state stay on the server / your machine, not in the public repo
 inbox/*
 !inbox/.gitkeep

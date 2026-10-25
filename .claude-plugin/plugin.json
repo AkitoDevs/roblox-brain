@@ -1,6 +1,5 @@
 {
   "name": "roblox-brain",
-  "version": "0.2.0",
   "description": "Curated Roblox/Luau knowledge for Claude, with an opt-in anonymous lesson feedback loop.",
   "author": { "name": "roblox-brain" },
   "license": "MIT"

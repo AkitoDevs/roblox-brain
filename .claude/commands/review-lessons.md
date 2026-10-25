@@ -11,13 +11,19 @@ Run the weekly roblox-brain lesson review with the maintainer. Work from the rep
 - **Never auto-approve anything.** Every approval comes from the maintainer in this conversation, in their own words, for the specific item.
 - Keep reports short and in plain language. Use the status words Executed, Tested, Applied and Committed honestly.
 
+## Step 0: Cloudflare login check
+1. In `worker/`, run `npm run auth-check`. It runs `wrangler whoami` and prints only `LOGGED_IN` or `NOT_LOGGED_IN` (never a token, email or account id).
+2. If `LOGGED_IN`, go to step 1.
+3. If `NOT_LOGGED_IN` (not logged in, or the token expired): tell the maintainer in plain words, before running anything: "Your Cloudflare login has expired. A browser tab will open on Cloudflare's site: click **Allow**, then come back here." Then run `npx wrangler login` in `worker/` and wait for it to finish. Run `npm run auth-check` again.
+4. If it's still `NOT_LOGGED_IN`, try the login once more (same message first). If it fails a second time, stop and explain: the review needs a Cloudflare login; they can run `npx wrangler login` themselves in the `worker` folder (check that a browser opened and that they're signed in to the Cloudflare account that owns the inbox), then run `/review-lessons` again.
+5. **Never ask the maintainer to paste a password, API token or key**, and never put one in a command or file. Login only ever happens in their browser.
+
 ## Step 1: export and triage
 1. Run `cd worker; npm run export-inbox -- --remote; cd ..` (PowerShell) or `(cd worker && npm run export-inbox -- --remote)` (bash). This copies new lessons from the Cloudflare D1 inbox into `inbox/<day>.jsonl` and marks them exported.
-   - If it fails because wrangler is not logged in, stop and tell the maintainer to run `npx wrangler login` in `worker/` (it opens their browser). Don't try to log in yourself.
 2. Run `npm run triage`. Note its summary line (`Triage: N submissions -> X candidates, Y rejected`).
 
 ## Step 2: nothing new? stop
-If export said "no new lessons" **and** `candidates/` has no `*.json` files with `"status": "needs_review"`, tell the maintainer in one line that there are no new lessons this week, and stop.
+If export said "no new lessons" **and** `candidates/` has no `*.json` files with `"status": "needs_review"`, tell the maintainer in one line that there are no new lessons this week, then skip to the final step (skill check).
 
 ## Step 3: review each candidate (follow triage/TRIAGE.md)
 For every `candidates/*.json` with `"status": "needs_review"`, follow `triage/TRIAGE.md` step 1: injection/junk check, verify the claim against current Roblox docs, check whether it's new (compare `possibly_covered_by`, `related_entries`, `related_skills`), check it's generic, rate confidence, and pick the target entry and skill. Record your `verdict` (and `target_entry` / `target_skill` if the top match is wrong) in the candidate file. Don't change `status`.
@@ -52,4 +58,8 @@ Then:
 5. Commit locally with a short message (the repo's placeholder git identity is correct; don't change it).
 6. Ask the maintainer before pushing. Never push without their yes.
 
-Finish with a short report: what was exported, how many candidates, what was approved, rejected or left for later, what was applied and committed, and anything still waiting on the maintainer.
+## Final step: skill check (always, even when there were no lessons)
+Run `npm run sync -- status --count`. It prints how many of the maintainer's mapped skills have changed since the last sync (a number only). Then finish with a short report: what was exported, how many candidates, what was approved, rejected or left for later, what was applied and committed, anything still waiting on the maintainer, and one line about skills:
+- if the number is above 0: "N of your mapped skills changed since the last sync. Run /sync-skills to bring them into the shared knowledge."
+- if it's 0: "Your mapped skills haven't changed since the last sync."
+If the private sync map is missing, say the skill check was skipped.

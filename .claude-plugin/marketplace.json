@@ -7,7 +7,6 @@
       "name": "roblox-brain",
       "source": "./",
       "description": "Curated Roblox/Luau knowledge for Claude, with an opt-in anonymous lesson feedback loop.",
-      "version": "0.2.0",
       "license": "MIT"
     }
   ]

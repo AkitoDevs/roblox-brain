@@ -8,6 +8,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { unifiedDiff } from "./difflib.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const candDir = path.join(root, "candidates");
@@ -40,31 +41,6 @@ if (!/^[a-z0-9-]+(\/[a-z0-9-]+)+$/.test(entryId)) throw new Error(`bad entry id:
 const entryFile = path.join(root, "knowledge", `${entryId}.md`);
 const skill = c.target_skill ? c.related_skills?.find((s) => s.name === c.target_skill) : c.related_skills?.[0];
 if (c.target_skill && !skill) throw new Error(`target_skill "${c.target_skill}" is not in related_skills`);
-
-// ---- minimal unified line diff (LCS), so no external tool is needed
-function unifiedDiff(a, b, nameA, nameB) {
-  const A = a.split("\n"), B = b.split("\n");
-  const n = A.length, m = B.length;
-  const L = Array.from({ length: n + 1 }, () => new Int32Array(m + 1));
-  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) L[i][j] = A[i] === B[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
-  const ops = [];
-  let i = 0, j = 0;
-  while (i < n && j < m) {
-    if (A[i] === B[j]) { ops.push([" ", A[i]]); i++; j++; }
-    else if (L[i + 1][j] >= L[i][j + 1]) ops.push(["-", A[i++]]);
-    else ops.push(["+", B[j++]]);
-  }
-  while (i < n) ops.push(["-", A[i++]]);
-  while (j < m) ops.push(["+", B[j++]]);
-  if (!ops.some(([t]) => t !== " ")) return "";
-  const lines = [`--- ${nameA}`, `+++ ${nameB}`];
-  ops.forEach(([t, s], k) => {
-    const near = ops.slice(Math.max(0, k - 3), k + 4).some(([u]) => u !== " ");
-    if (t !== " " || near) lines.push(t + s);
-    else if (lines.at(-1) !== "...") lines.push("...");
-  });
-  return lines.join("\n") + "\n";
-}
 
 if (!diffMode) {
   if (fs.existsSync(out)) { console.error(`Drafts already exist: ${path.relative(root, out)} (edit them, then run with --diff)`); process.exit(1); }
