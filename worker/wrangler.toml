@@ -1,0 +1,20 @@
+# roblox-brain hosted lesson inbox. Not deployed yet: see worker/README.md for the steps.
+name = "roblox-brain-inbox"
+main = "src/index.mjs"
+compatibility_date = "2026-09-01"
+# lib/safety.mjs imports node:fs/node:path (for loadBlocklist, unused here); nodejs_compat makes the copy load unchanged.
+compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+
+# No request logs or traces are kept by the Worker (they would include IPs and timestamps).
+[observability]
+enabled = false
+
+[[d1_databases]]
+binding = "DB"
+database_name = "rbrain-inbox"
+# Filled in after `wrangler d1 create rbrain-inbox` (step 3 of the deploy steps).
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+
+# Private blocklist terms are NOT in this file. Set them as a secret (one term per line):
+#   Get-Content ..\blocklist.private.txt -Raw | npx wrangler secret put BLOCKLIST     (PowerShell)

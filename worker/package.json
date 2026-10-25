@@ -1,0 +1,19 @@
+{
+  "name": "roblox-brain-inbox",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Hosted lesson inbox for roblox-brain: POST /lesson -> same validation as the MCP server -> D1.",
+  "scripts": {
+    "sync-lib": "node scripts/sync-lib.mjs",
+    "test": "node test/handler.test.mjs",
+    "dev": "wrangler dev --local",
+    "db:init:local": "wrangler d1 execute rbrain-inbox --local --file schema.sql",
+    "db:init:remote": "wrangler d1 execute rbrain-inbox --remote --file schema.sql",
+    "export-inbox": "node scripts/export-inbox.mjs",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "4.151.3"
+  }
+}
