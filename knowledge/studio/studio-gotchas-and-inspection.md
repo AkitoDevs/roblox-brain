@@ -10,7 +10,7 @@ tags: studio gotcha geometryservice splitapart editablemesh pivot primarypart me
 **Gotchas (each one cost a retry)**
 - GeometryService's SplitApart option defaults to true: pass false, or the first result is only one piece. Split and fragment pieces report the source centre as their Position.
 - CSG collision hulls give one-sided overlap results and fill sockets: use a mutual check plus exact rays, and PreciseConvexDecomposition where sockets matter.
-- EditableMesh: a face is visible from the side its (b − a) × (c − a) normal points to; a MeshPart made from one is re-centred on its bounding box; after a re-mesh, re-derive the pivot from a part, because a stored WorldPivot goes stale.
+- EditableMesh: a face is visible from the side its (b − a) × (c − a) normal points to; a MeshPart made from one may or may not be re-centred (a later re-test kept the mesh origin), so centre the vertices on their bounding box yourself; after a re-mesh, re-derive the pivot from a part, because a stored WorldPivot goes stale.
 - Terrain written in one call isn't raycastable until a later call.
 - A KeyframeSequence id from RegisterKeyframeSequence must be used exactly as returned; adding a prefix gave a zero-length track.
 - PrimaryPart overrides WorldPivot: set PrimaryPart.PivotOffset = PrimaryPart.CFrame:Inverse() × cornerCFrame to pivot at a corner.

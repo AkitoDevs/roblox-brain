@@ -1,7 +1,8 @@
 {
   "name": "roblox-brain-knowledge",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "changelog": [
+    { "version": "0.2.2", "notes": "New entries: building/import-scale-orientation, animation/markers-priority-ownership, ui/motion-gotchas. Updated: building/clip-scale-playability-checks, studio/gotchas-inspection." },
     { "version": "0.2.1", "notes": "New entry: combat/server-rewind (marked untested)." },
     { "version": "0.2.0", "notes": "89 maintainer-skill entries rewritten from the maintainer's own generic Roblox skills: UI (25), VFX (19), building (12), design (10), art (9), lighting (4), studio (4), animation (3), combat (2), security (1)." },
     { "version": "0.1.0", "notes": "Initial starter entries: ui/scaling, security/remote-validation, datastores/safe-saving, engine-facts/deprecated-apis." }
