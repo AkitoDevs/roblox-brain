@@ -13,7 +13,7 @@ tags: build critique greyscale value focal point clip check overlap coplanar cap
 - A build that looks right from the hero camera may not be playable: walk it from spawn and look at the back, inside and under.
 - Use 0.25 and 0.125 stud increments; keep overlays slightly apart.
 - Streaming: a far area may not be on the client at spawn. Use ModelStreamingMode Persistent for models a client script needs, or handle ChildAdded.
-- Budgets: box collision fidelity on walls and decor (it cut one wall mesh's saved size from 28 KB to 3.5 KB), CastShadow off on edge foliage and small detail, no stacked transparency over large screen areas, each mesh under 20k triangles. Draw calls and memory need Studio's own scene analysis or render stats, so list them as unverified until someone checks.
+- Budgets: box collision fidelity on walls and decor (it cut one wall mesh's saved size from 28 KB to 3.5 KB), CastShadow off on edge foliage and small detail, no stacked transparency over large screen areas, each mesh under 20k triangles. Draw calls and memory need Studio's own scene analysis or render stats, so list them as unverified until someone checks. Scripts can read `Stats.InstanceCount`, `PrimitivesCount`, `MovingPrimitivesCount` and `HeartbeatTimeMs` (there is no draw-call counter), which is enough for before and after counts of a pass.
 
 **Critique by eye**
 1. Capture the same cameras before and after (front, side, back, elevated, player height), plus a desaturated copy and a solid-black silhouette.

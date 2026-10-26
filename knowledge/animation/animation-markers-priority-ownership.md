@@ -18,7 +18,8 @@ These are engine behaviours that cause silent bugs in combat and cutscenes.
 
 **Priorities**
 - Use priority, not blend weights, to stop an attack and its hit reaction fighting over the same joints.
-- The `AnimationPriority` enum's numeric `Value` is not in ladder order (Core is 1000 and Idle is 0). Never compare priorities with `>=` on `Value`; compare against an explicit list of enum items.
+- The `AnimationPriority` enum's numeric `Value` is not in ladder order. Read in Studio: Idle 0, Movement 1, Action 2, Action2 3, Action3 4, Action4 5, Core 1000, so the numbers put Core last while it is the lowest priority. Never compare priorities with `>=` on `Value`; compare against an explicit list of enum items.
+- `Humanoid.ApplyJointVelocities` is not a member in current Studio, so ragdoll recipes that call it won't run as written.
 
 **Ownership**
 - In a live game, an animation plays only if the experience's owner (the user or the group) owns it or has been granted access.

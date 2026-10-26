@@ -23,4 +23,5 @@ Each choice below was tested in Studio.
 - **Local post effects:** Blur or ColorCorrection parented to the Camera, rather than changing shared Lighting.
 - **Sound with room character:** AudioPlayer to AudioReverb to AudioEmitter, connected with Wires.
 - **Item preview in UI:** a ViewportFrame in a ScreenGui (one inside a SurfaceGui drew nothing in Edit). Animated rigs need a WorldModel; fit the camera to the bounding sphere.
+- **Audits by selector:** `Instance:QueryDescendants` with name (`#`), tag (`.`), class, `[Prop=value]`, `:not()` and `> child` selectors returned correct counts in a test, for example MeshParts with no SurfaceAppearance.
 - **A build-checking tool:** run the validator and auto-fix in one call acting on the Selection, so one undo restores everything.

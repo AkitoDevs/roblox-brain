@@ -18,4 +18,5 @@ tags: ui simulator item card rarity tabs rewards daily rebirth offer hud popup h
 - **Daily rewards:** days 1 to 6 as small cards, day 7 as a big special card.
 - **Rebirth:** the current and next rebirth level as two green pills with an arrow between them, a red warning line, a progress bar showing current currency against the requirement, the rebirth button and a Robux skip button.
 - **Offer card:** a short hook (limited quantity, a multiplier, or "permanent"), a rotating sunburst behind it and a rainbow-stroke border.
+- **Nine-slice frames:** `ScaleType = Slice` with `SliceCenter` in source pixels (a 48 px image with 16 px corners is `Rect(16, 16, 32, 32)`) keeps the corners the same size on any frame size, where `Stretch` squashes them into ellipses. `SliceScale = 2` doubles the corner size. Tested on several label sizes; check one frame in Play before using it across a whole UI.
 - **HUD:** a two-column left button grid with notify badges, currency pills bottom-left, big gradient money text, boost badges bottom-right, top tabs.
