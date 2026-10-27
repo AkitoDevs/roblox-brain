@@ -12,6 +12,7 @@ tags: grounding trees roots rocks vines orientation sightline arch doorway openi
 - Rocks bury 20 to 30%; posts are embedded or on a plinth; pillars get a base moulding; crystals emerge from a cracked base.
 - Scatter pebbles, tufts, leaves or debris at bases, and break up the edges where two ground materials meet.
 - When placing a tree mesh, find the trunk's lowest point and widest section, then lower the model until the floor plane cuts the widest section.
+- Scripted grounding: rays hit a mesh's collision shape, so Box or Hull scenery stops them early. Cast against collision proxies or precise-collision parts, exclude the prop, and save original CFrames to undo.
 
 **Organic growth stays connected.** Vines are continuous stems whose segments touch end to end and hug the surface; every leaf hangs from the stem on a short stalk, angled out and down. Hide the leaves mentally: the stem should be one connected path from root to every tip.
 

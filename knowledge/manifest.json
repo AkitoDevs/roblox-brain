@@ -1,7 +1,8 @@
 {
   "name": "roblox-brain-knowledge",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "changelog": [
+    { "version": "0.2.4", "notes": "New entry: vfx/foliage-wind-sway (marked untested). Updated: building/grounding-placement, studio/safe-editing (reviewed community lessons)." },
     { "version": "0.2.3", "notes": "Updated: animation/markers-priority-ownership, building/clip-scale-playability-checks, studio/tool-picker-mechanics, ui/simulator-components (newly tested Studio facts)." },
     { "version": "0.2.2", "notes": "New entries: building/import-scale-orientation, animation/markers-priority-ownership, ui/motion-gotchas. Updated: building/clip-scale-playability-checks, studio/gotchas-inspection." },
     { "version": "0.2.1", "notes": "New entry: combat/server-rewind (marked untested)." },
