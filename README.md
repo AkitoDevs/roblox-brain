@@ -5,7 +5,6 @@
 <br>
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-![Status: early development](https://img.shields.io/badge/status-early%20development-orange.svg)
 ![Works with Claude Code](https://img.shields.io/badge/works%20with-Claude%20Code-8A6BFF.svg)
 ![Free](https://img.shields.io/badge/price-free-brightgreen.svg)
 
@@ -17,7 +16,7 @@
 
 ---
 
-> **Early development.** Roblox Brain is new, so nothing is guaranteed, but it should work. If something doesn't, please [open an issue](../../issues).
+> **Found a problem?** [Open an issue](../../issues) and it will get looked at.
 
 ## What you get
 
