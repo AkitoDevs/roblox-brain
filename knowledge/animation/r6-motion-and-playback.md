@@ -15,3 +15,10 @@ tags: animation r6 spline catmull-rom grip weld motor6d transform keyframesequen
 - **Baking.** Bake every frame linearly for export so the authoring tool, the data and Roblox match exactly. Walks use a linear root with a known stride; playback rate in Roblox = movement speed / stride speed. Chain combos by slicing each attack at its cancel point.
 - **Shared motion.** Share one body motion for dashes and rolls across characters and vary only the arms per weapon.
 - **Style notes that read well:** dashes are full-force step-ins (load, drive off the back foot, stomp), not slides; rolls tumble one way with no unwinding spin; the weapon stays in hand through jumps.
+
+**How the Animator plays clips (measured on R6 in Edit)**
+- Two-key Linear clips interpolate with nlerp; unevenly spaced keys use a lerp of the rotation vector. Rotations are not slerped, so avoid huge single steps and never key an exact 180 degree turn.
+- A track at weight 0.5 on its own gives half the rotation: spare weight blends toward the rest pose, not toward a lower layer.
+- The HumanoidRootPart pose in a clip is ignored. Key root motion on the Torso pose.
+- A clip registered at runtime shows nothing until its Length is above 0, plus one frame after Play. Preload clips before they're needed.
+- To hold a pose for a capture: Play, AdjustSpeed(0), set TimePosition, then StepAnimations(0).

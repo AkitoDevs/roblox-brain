@@ -1,11 +1,11 @@
 ---
-title: FBX and glTF import scale, mirroring and pivots
+title: FBX and glTF import scale, orientation and pivots
 topic: building/import-scale-orientation
 scope: generic
 source: maintainer-skill
-tags: blender fbx gltf import 3d scale studs unit scale mirror x axis open cloud rotation pivot hinge pivotto primarypart template offset
+tags: blender fbx gltf obj import 3d scale studs unit scale orientation 180 degree turn mirror open cloud rotation pivot hinge pivotto primarypart template offset
 ---
-# FBX and glTF import scale, mirroring and pivots
+# FBX and glTF import scale, orientation and pivots
 
 These were measured in Studio with a test cube, not taken on trust.
 
@@ -15,8 +15,9 @@ These were measured in Studio with a test cube, not taken on trust.
 - "FBX All" (`FBX_SCALE_ALL`) is a generic setting, not the Roblox one. Any recipe whose stud size was never measured is a guess; when size matters, use the measured route.
 
 **Orientation**
-- Both FBX and glTF come in mirrored on the X axis through Import 3D. An asymmetric prop (a sign, a hand-held item, a one-sided door) flips, so check its left and right side after every import.
-- Meshes uploaded through Open Cloud are not mirrored, but MeshParts imported that way carry a -90 degree rotation about X.
+- Import 3D turns glTF and OBJ 180 degrees about the vertical (Y) axis: X and Z are both negated. FBX probably behaves the same. Nothing is mirrored, so never pre-mirror an asymmetric prop (a sign, a hand-held item, a one-sided door). An earlier "mirrored on X" reading only measured X; checking Z with an asymmetric test piece showed it was this turn.
+- Meshes uploaded through Open Cloud carry a -90 degree rotation about X.
+- Other Import 3D losses seen in testing: glTF base colours were dropped, and the separate object groups in an OBJ were merged into one MeshPart named `default`.
 - Fix orientation once per template, not per copy or per effect. Store the correcting CFrame as an attribute on the template and apply it when cloning.
 
 **Pivots for moving props (doors, lids, levers)**
