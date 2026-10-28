@@ -1,6 +1,6 @@
 # Security Policy
 
-Roblox Brain is in early development. Only the latest version on the `main` branch is supported.
+Only the latest version on the `main` branch is supported.
 
 ## Reporting a vulnerability
 
