@@ -60,6 +60,31 @@ assert.equal(search(entries, "save player data")[0].id, "datastores/safe-saving"
 assert.equal(search(entries, "remote exploit validate")[0].id, "security/remote-validation");
 assert.equal(search(entries, "mobile responsive gui")[0].id, "ui/scaling");
 assert.equal(search(entries, "wait spawn deprecated")[0].id, "engine-facts/deprecated-apis");
+// scripting prompts that used to return UI, tycoon, lobby or combat entries
+const scripting = {
+  "make a leaderboard with datastore": "datastores/leaderboards",
+  "round system game loop": "scripting/round-game-loop",
+  "round loop": "scripting/round-game-loop",
+  "memory leak connections": "scripting/memory-leaks-connections",
+  "memory leaks": "scripting/memory-leaks-connections",
+  "pathfinding npc": "scripting/pathfinding-npc",
+  "pathfinding": "scripting/pathfinding-npc",
+  "gamepass purchase prompt": "monetization/gamepasses-dev-products",
+  "module script structure client server": "scripting/project-structure-bootstrap",
+  "sound music": "scripting/sound-music",
+  "sound": "scripting/sound-music",
+  "tool equip": "scripting/tools-equip",
+  "proximity prompt": "scripting/proximity-prompts",
+  "raycast gun": "scripting/raycast-weapons",
+  "teleport between places": "scripting/teleporting-places",
+};
+for (const [q, id] of Object.entries(scripting)) assert.equal(search(entries, q)[0]?.id, id, `search "${q}"`);
+
+// --- the package and the knowledge release carry the same version
+const pkg = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
+const manifest = JSON.parse(fs.readFileSync(path.join(root, "knowledge/manifest.json"), "utf8"));
+assert.equal(pkg.version, manifest.version, "package.json and knowledge/manifest.json versions differ");
+assert.equal(manifest.changelog[0].version, manifest.version, "the newest changelog entry matches the manifest version");
 
 // --- triage: dedupes repeats across installs, rejects junk, never touches knowledge/
 const inbox = fs.mkdtempSync(path.join(os.tmpdir(), "rbrain-inbox-"));

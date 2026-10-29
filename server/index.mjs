@@ -9,9 +9,7 @@ import os from "node:os";
 import path from "node:path";
 import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { z } from "zod";
+import { StdioMcpServer } from "./mcp.mjs";
 import { loadKnowledge, search, tokenize } from "../lib/knowledge.mjs";
 import { loadBlocklist } from "../lib/safety.mjs";
 import { validateLesson, OUTCOMES } from "../lib/lesson.mjs";
@@ -134,12 +132,13 @@ const INSTRUCTIONS = [
   "When the user says turn off/on Roblox Brain sharing, show my shared tips, or delete my shared tips, call sharing (off/on/show/delete). Otherwise never change sharing.",
 ].join("\n");
 
-const server = new McpServer({ name: "roblox-brain", version: "0.4.0" }, { instructions: INSTRUCTIONS });
+const server = new StdioMcpServer({ name: "roblox-brain", version: "0.4.0" }, { instructions: INSTRUCTIONS });
+const str = (extra = {}) => ({ type: "string", ...extra });
 
 server.tool(
   "search_knowledge",
   "Search Roblox/Luau knowledge once per task. Returns the best match in full and related excerpts with ids.",
-  { query: z.string().min(2) },
+  { properties: { query: str({ minLength: 2 }) }, required: ["query"] },
   async ({ query }) => {
     const notice = takeNotice(ensureConfig());
     const q = tokenize(query);
@@ -163,7 +162,7 @@ server.tool(
 server.tool(
   "get_skill",
   "Full text of one knowledge entry by id.",
-  { id: z.string() },
+  { properties: { id: str() }, required: ["id"] },
   async ({ id }) => {
     const e = entries.find((x) => x.id === id);
     if (!e) return text("Unknown id. Use an id from search_knowledge.");
@@ -176,7 +175,7 @@ server.tool(
 server.tool(
   "sharing",
   "Roblox Brain sharing: status, on, off, show (sharing history), delete (delete shared tips). Only when the user asks.",
-  { action: z.enum(["status", "on", "off", "show", "delete"]) },
+  { properties: { action: str({ enum: ["status", "on", "off", "show", "delete"] }) }, required: ["action"] },
   async ({ action }) => {
     const c = ensureConfig();
     if (action === "status") return text(`${takeNotice(c)}Roblox Brain sharing is ${c.share ? "on" : "off"}. Sharing history: ${HISTORY}. Details: ${PRIVACY}`);
@@ -226,12 +225,15 @@ server.tool(
   "submit_lesson",
   "After a task, share one short generic tip (no code, names, ids, links or emails), only if something generalizable was learned.",
   {
-    topic: z.string(),
-    problem: z.string(),
-    fix: z.string(),
-    apis: z.array(z.string()).optional(),
-    outcome: z.enum(OUTCOMES).optional(),
-    engine_version: z.string().optional(),
+    properties: {
+      topic: str(),
+      problem: str(),
+      fix: str(),
+      apis: { type: "array", items: { type: "string" } },
+      outcome: str({ enum: OUTCOMES }),
+      engine_version: str(),
+    },
+    required: ["topic", "problem", "fix"],
   },
   async (args) => {
     const c = ensureConfig();
@@ -275,4 +277,4 @@ server.tool(
   }
 );
 
-await server.connect(new StdioServerTransport());
+server.connect();

@@ -31,7 +31,7 @@ Also offer to delete the local review copies (`inbox/*.jsonl`, `inbox/processed/
 Pin a final version so every installed plugin updates one last time and then stays put: add `"version": "<knowledge manifest version>-final"` to `.claude-plugin/plugin.json` and to the plugin entry in `.claude-plugin/marketplace.json`. Add a `knowledge/manifest.json` changelog line: "Final release: sharing service ended."
 
 ## 5. Build, test, commit locally
-`npm run bundle`, `npm run build`, `npm test`, and in `worker/` `npm test`. If anything fails, stop and report it. Then commit locally (the repo's placeholder git identity is correct) and show the commit id.
+`npm run build`, `npm test`, and in `worker/` `npm test`. If anything fails, stop and report it. Then commit locally (the repo's placeholder git identity is correct) and show the commit id.
 
 ## 6. Push
 Ask: "Push this to GitHub?" Push only on a yes.

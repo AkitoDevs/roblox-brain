@@ -14,7 +14,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { loadKnowledge, wordCount, ENTRY_WORD_LIMIT } from "../lib/knowledge.mjs";
 
-const ALWAYS_ON_TARGET = 1000, SEARCH_CAP_TOKENS = 1200, CHARS_PER_TOKEN = 2.5, SEARCH_CAP_CHARS = 4800; // keep in step with server/index.mjs
+const ALWAYS_ON_TARGET = 1000, SEARCH_CAP_TOKENS = 1200, CHARS_PER_TOKEN = 2.5, SEARCH_CAP_CHARS = 4800, GET_CAP_CHARS = 3200; // keep in step with server/index.mjs
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "rbrain-footprint-"));
 const est = (s) => Math.ceil(s.length / CHARS_PER_TOKEN);
@@ -63,8 +63,11 @@ try {
   // (c) entry length
   const tooLong = entries.filter((e) => wordCount(e) > ENTRY_WORD_LIMIT).map((e) => `${e.id} (${wordCount(e)})`);
   assert.deepEqual(tooLong, [], `entries over ${ENTRY_WORD_LIMIT} words: ${tooLong.join(", ")}`);
+  // a full entry is never trimmed when sent, so code examples always arrive complete
+  const trimmed = entries.filter((e) => `# ${e.meta.title}\n\n${e.body}`.length > GET_CAP_CHARS).map((e) => e.id);
+  assert.deepEqual(trimmed, [], `entries over the ${GET_CAP_CHARS}-character full-entry cap: ${trimmed.join(", ")}`);
 
-  console.log(`footprint test passed: always-on ~${alwaysOn} tokens (target ${ALWAYS_ON_TARGET}), largest search ${maxSearch} chars, ~${Math.ceil(maxSearch / 4)} tokens (cap ${SEARCH_CAP_CHARS} chars, ~${SEARCH_CAP_TOKENS} tokens), no entry over ${ENTRY_WORD_LIMIT} words, no resending in a session`);
+  console.log(`footprint test passed: always-on ~${alwaysOn} tokens (target ${ALWAYS_ON_TARGET}), largest search ${maxSearch} chars, ~${Math.ceil(maxSearch / 4)} tokens (cap ${SEARCH_CAP_CHARS} chars, ~${SEARCH_CAP_TOKENS} tokens), no entry over ${ENTRY_WORD_LIMIT} words or trimmed, no resending in a session`);
 } finally {
   fs.rmSync(tmp, { recursive: true, force: true });
 }

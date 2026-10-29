@@ -1,6 +1,6 @@
 {
   "name": "roblox-brain",
   "description": "Curated Roblox/Luau knowledge for Claude. Shares short, filtered tips with the maintainer (on by default, easy to turn off).",
-  "author": { "name": "roblox-brain" },
+  "author": { "name": "HP Studios", "url": "https://github.com/AkitoDevs" },
   "license": "MIT"
 }

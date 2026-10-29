@@ -2,7 +2,7 @@
   "mcpServers": {
     "roblox-brain": {
       "command": "node",
-      "args": ["${CLAUDE_PLUGIN_ROOT}/server/bundle.mjs"],
+      "args": ["${CLAUDE_PLUGIN_ROOT}/server/index.mjs"],
       "env": {
         "RBRAIN_ENDPOINT": "https://roblox-brain-inbox.rb-inbox-9m2q.workers.dev/lesson"
       }

@@ -24,14 +24,47 @@ Roblox Brain is a free plugin for Claude. It gives your Claude a curated, generi
 
 | Area | Helps Claude with |
 |---|---|
-| **Scripting** | Luau patterns, client and server structure, remotes, data saving, performance |
+| **Scripting** | Module structure, remotes and rate limiting, strict typing, memory leaks, performance and streaming, pathfinding NPCs, round loops, ProximityPrompts, tools, raycast guns, sound and music, teleporting between places |
+| **Data saving** | Safe saving with retries and schema migration, session locking, leaderboards |
+| **Monetization** | Game passes, developer products with a correct ProcessReceipt, ethical pricing, paid random item rules, retention and onboarding |
+| **Security** | Validating remotes and auditing free-model kits before reuse |
 | **VFX** | Particles, beams, trails, timing and color so effects read well |
 | **UI** | Responsive layouts, clean menus, animation and polish |
 | **Lighting** | Mood, light direction, glow, color grading and atmosphere |
 | **Modeling** | Shapes, detail, color and building props that look crafted |
-| **Game design** | Retention, onboarding, ethical monetization and the publish checklist |
+| **Animation and combat** | R6 combat animation, animation events and priority, hit detection and hit feel |
+| **Game design** | Core loops, lobbies, collect and tycoon systems, RNG reveals, icons and thumbnails |
 
-The knowledge is written in our own words, kept generic, and checked before every release. It never replaces the skills you already have. Claude uses whichever fits the task best.
+The scripting entries include working Luau examples that follow current Roblox APIs. The knowledge is written in our own words, kept generic, and checked before every release. It never replaces the skills you already have. Claude uses whichever fits the task best.
+
+### Example: what changes for a scripting prompt
+
+Prompt: *"Add a button that sells 100 coins for Robux."* (Shortened, illustrative.)
+
+**Before:** a common mistake, and an easy one to make without guidance, is to grant the coins when the purchase window closes:
+
+```lua
+MarketplaceService.PromptProductPurchaseFinished:Connect(function(userId, productId, purchased)
+	if purchased then addCoins(userId, 100) end -- not proof of payment; can double-grant or lose coins
+end)
+```
+
+**After, with Roblox Brain:** Claude finds `monetization/gamepasses-dev-products` and grants inside `ProcessReceipt`, records the purchase id in the player's save, and only reports success once it is saved:
+
+```lua
+MarketplaceService.ProcessReceipt = function(receipt)
+	local player = Players:GetPlayerByUserId(receipt.PlayerId)
+	local profile = player and Data.get(player)
+	if not profile then return Enum.ProductPurchaseDecision.NotProcessedYet end
+	if profile.purchases[receipt.PurchaseId] then return Enum.ProductPurchaseDecision.PurchaseGranted end
+	profile.coins += 100
+	profile.purchases[receipt.PurchaseId] = true
+	if not Data.saveNow(player) then return Enum.ProductPurchaseDecision.NotProcessedYet end
+	return Enum.ProductPurchaseDecision.PurchaseGranted
+end
+```
+
+It also points Claude to session-locked saving, so the coins can't be lost or duplicated when the player hops servers.
 
 ## Install
 
