@@ -36,5 +36,5 @@ Measure before and after with the MicroProfiler (Ctrl+F6 in a running game) and 
 - The server always has everything; streaming only affects clients.
 - `Model.ModelStreamingMode`: **Atomic** sends a model's parts together (use for anything a client script reads as a whole); **Persistent** is sent once after joining and never streams out (use sparingly, for things like the lobby's main signs); `Workspace.PersistentLoaded` fires when persistent models have arrived.
 - `StreamingMinRadius` (default 64) always stays loaded; `StreamingTargetRadius` (default 1024) is the farthest it streams in.
-- Before moving a player far across the map from the server, call `player:RequestStreamAroundAsync(targetPosition)` so the area is there when they land.
+- Before moving a player far across the map from the server, call `player:RequestStreamAroundAsync(targetPosition)` so the area is there when they land. Spectating: setting `ReplicationFocus` alone may stream nothing in; call `RequestStreamAroundAsync` at the target too each time the target changes.
 - `StreamingIntegrityMode = PauseOutsideLoadedArea` pauses a player rather than letting them fall through unloaded ground; `StreamOutBehavior = Opportunistic` frees memory sooner.
