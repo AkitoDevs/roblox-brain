@@ -1,7 +1,8 @@
 {
   "name": "roblox-brain-knowledge",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "changelog": [
+    { "version": "0.3.3", "notes": "New measured entries: engine-facts/measured-ui-script-facts, engine-facts/measured-render-import-facts. New entries made of unverified tips, each line labelled and not yet tested: combat/combat-timing-and-stun-tips, animation/baking-contact-tips, animation/cutscene-camera-tips, vfx/vfx-layer-ownership-tips, scripting/performance-and-validation-tips, scripting/audio-mixing-tips, studio/automation-and-testing-tips, design/launch-growth-and-hub-tips." },
     { "version": "0.3.2", "notes": "New entry: engine-facts/measured-engine-behaviours (pose easing CubicV2, casts that start inside a part, CanQuery with CanCollide, PointLight Range and FOV limits, Gotham = Montserrat), measured in Studio." },
     { "version": "0.3.1", "notes": "New entries: scripting/jump-pads-launch, scripting/teams-and-spawns, security/movement-checks. Updated: ui/scaling, studio/editing-live-places, scripting/performance-frame-streaming." },
     { "version": "0.3.0", "notes": "Scripting and monetization. New entries (each with working Luau examples): scripting/project-structure-bootstrap, scripting/remotes-setup-rate-limiting, scripting/memory-leaks-connections, scripting/performance-frame-streaming, scripting/luau-strict-typing, scripting/pathfinding-npc, scripting/round-game-loop, scripting/proximity-prompts, scripting/tools-equip, scripting/sound-music, scripting/raycast-weapons, scripting/teleporting-places, datastores/session-locking, datastores/leaderboards, monetization/gamepasses-dev-products, monetization/ethical-monetization-retention. Rewritten: datastores/safe-saving (retries, schema migration, BindToClose). The plugin now runs from readable source with no dependencies (the generated bundle is gone)." },

@@ -1,6 +1,6 @@
 {
   "name": "roblox-brain",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Curated Roblox/Luau knowledge for Claude. Shares short, filtered tips with the maintainer (on by default, easy to turn off).",
   "type": "module",
   "license": "MIT",
