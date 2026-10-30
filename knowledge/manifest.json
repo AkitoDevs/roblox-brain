@@ -1,7 +1,8 @@
 {
   "name": "roblox-brain-knowledge",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "changelog": [
+    { "version": "0.3.2", "notes": "New entry: engine-facts/measured-engine-behaviours (pose easing CubicV2, casts that start inside a part, CanQuery with CanCollide, PointLight Range and FOV limits, Gotham = Montserrat), measured in Studio." },
     { "version": "0.3.1", "notes": "New entries: scripting/jump-pads-launch, scripting/teams-and-spawns, security/movement-checks. Updated: ui/scaling, studio/editing-live-places, scripting/performance-frame-streaming." },
     { "version": "0.3.0", "notes": "Scripting and monetization. New entries (each with working Luau examples): scripting/project-structure-bootstrap, scripting/remotes-setup-rate-limiting, scripting/memory-leaks-connections, scripting/performance-frame-streaming, scripting/luau-strict-typing, scripting/pathfinding-npc, scripting/round-game-loop, scripting/proximity-prompts, scripting/tools-equip, scripting/sound-music, scripting/raycast-weapons, scripting/teleporting-places, datastores/session-locking, datastores/leaderboards, monetization/gamepasses-dev-products, monetization/ethical-monetization-retention. Rewritten: datastores/safe-saving (retries, schema migration, BindToClose). The plugin now runs from readable source with no dependencies (the generated bundle is gone)." },
     { "version": "0.2.5", "notes": "New entry: vfx/emitter-trail-light-facts. Updated: building/import-scale-orientation (Import 3D turns 180 degrees about Y, not mirrored), animation/r6-playback (measured Animator behaviour)." },
