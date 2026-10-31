@@ -17,5 +17,8 @@ Entries tagged "(unverified)" in their title hold lines labelled "Unverified tip
 | studio/automation-and-testing-tips | Cloned R6 changes collision groups; stuck ChangeHistory swallows writes | Clone test in Studio |
 | design/launch-growth-and-hub-tips | Day-8 / weeks 2-4 weighting, gameplay-video rules, ad-goal behaviour, retention medians | Roblox Creator Hub docs and announcements (platform data, re-check before use) |
 | scripting/audio-mixing-tips | SoundGroup property routes; parenting does not | Route a tone through a group with an EqualizerSoundEffect |
+| ui/panel-controller-tips | Scale grid cells inside an AutomaticCanvasSize ScrollingFrame fail to settle; pixel cells fix it | Build both in a test place, add 40 items, scroll to the end in Play |
+| ui/notification-stack-tips | Merged repeat notifications with an (xN) counter, cap of 4, oldest removed first, read well | Build one stack, spam one message and three others, owner watches in Play |
+| ui/panel-controller-tips | Blur 14 plus HUD hiding while a panel is open; ring-opened stalls close only their own panel | One panel and one ring in a test place, walk in and out in Play |
 
 Rule: nothing here contradicts a tested fact; anything that ever does is deleted, not labelled.
