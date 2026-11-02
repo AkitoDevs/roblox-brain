@@ -1,6 +1,6 @@
 # Contributing to Roblox Brain
 
-Thanks for helping! Roblox Brain is a free, early-development Claude plugin with generic Roblox knowledge.
+Thanks for helping! Roblox Brain is a free Claude plugin with generic Roblox knowledge.
 
 ## Easiest ways to help
 
