@@ -9,6 +9,8 @@ tags: ui simulator recreation reference screenshot measure pixel grid font match
 
 **3. Icons, never emoji.** Use a consistent icon pack in the style (outlined variants suit simulator UI), pick by looking at contact sheets rather than filenames, and preload images before capturing or they render blank. If nothing matches, render new icons in the same style (a three-band toon ramp with an inverted-hull outline, transparent 256 px PNG).
 
+**Saving generation credits.** When generating UI art, make white or neutral bases (button, title tab, card) once and tint them in Studio with a UIGradient rather than generating one image per colour. List every asset and the number of generations first, and get approval before any paid generation.
+
 **4. Match the font, don't guess.** Zoom into the reference's text, render 20 to 30 candidate fonts in Studio over the reference background, and compare letter shapes (a, R, S) and width. Then measure the reference's text widths and size each label to match instead of one global size.
 
 **5. Real studs, not dots.** Simulator surfaces have raised studs: a tiled stud ImageLabel (highlight on the top-left rim, shadow bottom-right, so it tints any colour) behind each surface's content with a matching corner radius. Transparency about 0.38 on coloured surfaces and 0.45 to 0.55 on dark ones.
