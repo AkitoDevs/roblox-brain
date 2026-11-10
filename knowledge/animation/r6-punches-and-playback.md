@@ -15,3 +15,7 @@ tags: animation r6 spline catmull-rom grip weld motor6d transform keyframesequen
 - Root motion: drive the root with a LinearVelocity limited to the horizontal axes. Priorities: Idle for idle, Movement for walks, Action for moves.
 - Weapon attachment: a Weld with an explicit C0; WeldConstraints can capture stale offsets.
 - Hits are server-authoritative and timed from animation markers; the client only reports which move started.
+
+**Previewing a procedural pose without Play (unverified)**
+- **Unverified tip:** Play is often unavailable or shared, and `Motor6D.Transform` has no visible effect on anchored parts in Edit. Drive the animator on a rig that is out of the tree, compute each limb's CFrame as parent × C0 × Transform × C1 inverse, and place plain anchored display parts (no joints) at those CFrames in a temporary workspace folder.
+- **Unverified tip:** colour the left limbs differently from the right so the gait reads, take shots from the side, back and front, then delete the folder.

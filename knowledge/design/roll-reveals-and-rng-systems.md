@@ -15,3 +15,7 @@ tags: rng roll summon reveal cutscene skip threshold equip delete warning biome 
 - **Roll bar:** one big Roll button bottom centre with a small counter, auto and quick toggles beside it; each locked toggle says what unlocks it.
 
 **Biomes and weather.** The server cycles biomes and time of day, and each changes the whole map (snow whitens the grass, a sandstorm adds dense Atmosphere and long gust streaks, night makes auras glow brighter). Show the current biome and time in a HUD corner and announce changes in chat. Some results only roll in certain biomes, which brings players back for the weather.
+
+**Luck and odds order**
+- **Unverified tip:** if a luck multiplier boosts only the rare rows of a weighted table, it can lift them above cheaper common rows, so better items become more likely than worse ones. Clamp boosted weights at the rare threshold so the boost cannot cross into common rows.
+- **Unverified tip:** add a test that builds the displayed chances at maximum luck and fails if any row is more likely than the row before it.

@@ -14,5 +14,6 @@ Every line here is labelled **Unverified tip:** because it comes from outside re
 - **Unverified tip:** give each sound key (a name in a lookup table) one job. A key reused for several purposes makes later swaps risky.
 - **Unverified tip:** for voice or sung content, keep a note of where it came from and its licence before using it in a game.
 - **Unverified tip:** route a group of sounds by setting each Sound's SoundGroup property; parenting a Sound under a SoundGroup instance is not reported to do the routing.
+- **Unverified tip:** audition ambient loops (water, fire, wind) before choosing them, since many fade in or out, jump in level at the loop seam, or are short enough to repeat audibly. Play each candidate through an AudioPlayer wired to an AudioAnalyzer (works in Edit with no output) and sample `RmsLevel` and `PeakLevel`. Compare the start level with the end level for the seam, look for a fade in the first second, and weigh steadiness and crackle. Trim fades with the Sound's `LoopRegion`.
 
 Check Roblox's audio asset rules (what you may upload and use) in the official documentation before shipping any audio.

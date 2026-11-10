@@ -9,7 +9,7 @@ tags: easing cubic cubicv2 poseeasingstyle keyframe animation reversed raycast s
 
 Measured in Studio (Edit mode, values read back by script, October 2026). Each one changes how you should write code.
 
-**Pose easing: use CubicV2, not Cubic.** On keyframe poses, the legacy `Cubic` style runs reversed: `Cubic` + `In` produces an ease-out curve, and `Cubic` + `Out` an ease-in. `CubicV2` matches TweenService's direction. If a Cubic key "eases the wrong way", this is why. (Measured in the Edit animation evaluator; a running game wasn't measured separately.) `PoseEasingStyle` has no Quad; the options are Linear, Constant, Elastic, Cubic, Bounce and CubicV2.
+**Pose easing: use CubicV2, not Cubic.** On keyframe poses, the legacy `Cubic` style runs reversed: `Cubic` + `In` produces an ease-out curve, and `Cubic` + `Out` an ease-in. `CubicV2` matches TweenService's direction. If a Cubic key "eases the wrong way", this is why. (Measured in the Edit animation evaluator; a running game wasn't measured separately.) `PoseEasingStyle` has no Quad and no Sine: setting either throws while building a KeyframeSequence. The valid names are Linear, Constant, Elastic, Cubic, Bounce and CubicV2; check them in a unit test.
 
 **Casts ignore a part they start inside.** `Raycast`, `Spherecast` and `Blockcast` that begin inside a part don't report that part; they return nil or the next part behind it. For hit checks that may start overlapping (a sword already inside an enemy), also run an overlap query (`GetPartsInPart` or `GetPartBoundsInBox`) at the start position.
 

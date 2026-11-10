@@ -24,3 +24,7 @@ Look at what is trending first, then draft 6 or more concepts and score each one
 - Action-command titles are over-represented in Up-and-Coming (about 21% against 11%). Otherwise use a hook plus a genre word.
 - Put update or event info in a removable `[tag]`, never in the real title.
 - Keep emoji and capital letters to a minimum.
+
+**World-space titles**
+- **Unverified tip:** a stud-sized billboard title with a thick fixed-pixel text stroke looks fine up close, but from far away the stroke swallows the shrinking letters and it reads as a glowing blob.
+- **Unverified tip:** check titles from the distance players first see them. Size the letters to that distance (far landmarks need larger titles than near ones), or use a stroke that scales with the text.

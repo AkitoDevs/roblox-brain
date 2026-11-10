@@ -21,3 +21,5 @@ Players use phones, tablets, consoles and large monitors, so UI must not depend 
 - Touch targets can be bigger than they look: wrap a thin slider track in a taller transparent button, and connect the press handler to the knob too, since a knob drawn on top swallows the press.
 - World UI: a SurfaceGui on a cylinder's flat end may not draw, so put it on a thin invisible block in front. Scaled text tops out at 100 px, so for huge floor text lower `PixelsPerStud`.
 - Set ScreenGui.ScreenInsets so buttons avoid notches and the top bar area on mobile.
+- **Fixed design canvas:** make a root frame with AnchorPoint 0.5, 0.5 at Position 0.5, 0.5, Size {1/s, 0, 1/s, 0} (in scale on both axes) and a UIScale of s, where s is the smaller of (viewport width / design width) and (viewport height / design height). Children then use offsets as if on the design canvas. Recompute s whenever the viewport size changes.
+- **Unverified tip:** in the Device Emulator, scripted clicks can land left of the target by the safe-area inset on notched phones; confirm with real mouse input before blaming the game.

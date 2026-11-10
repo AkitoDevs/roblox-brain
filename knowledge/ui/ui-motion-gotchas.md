@@ -18,3 +18,5 @@ Engine behaviours to check before judging how a UI animation feels.
 **Reduced Motion.** Read GuiService.ReducedMotionEnabled before any slide, pop, shake or looping decoration. When it's on, use a short fade or an instant change instead, and keep the information (colour, text, icon) the same. Listen for it changing rather than reading it once.
 
 Status words still apply: a tween that ran is Executed; how it feels is judged in Play by the person you're building for.
+
+**Unverified tip: smooth very slow drifts.** UDim2 offsets are whole pixels and drawn positions can snap to whole pixels even with fractional Scale, so slow movement looks steppy (worse on phones). A tiny Rotation (about 0.01 degrees) with Scale-based movement is reported to skip the snapping. Oversize the element by a few pixels to keep edges covered and update in RenderStepped. Reproduce it before relying on it.
