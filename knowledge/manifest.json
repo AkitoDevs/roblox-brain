@@ -1,7 +1,8 @@
 {
   "name": "roblox-brain-knowledge",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "changelog": [
+    { "version": "0.3.8", "notes": "New entries: building/avoid-the-defaults, ui/avoid-the-defaults." },
     { "version": "0.3.7", "notes": "New entries on obby design: design/obby-course-layout-and-pacing, design/obby-jump-numbers-and-hazards, design/roblox-ranking-and-funnels, building/kit-and-hero-first-workflow, lighting/snow-candy-christmas-lighting, vfx/snow-sparkle-and-checkpoints, ui/obby-hud-and-insets, engine-facts/obby-mechanics-checks." },
     { "version": "0.3.6", "notes": "New entries made of unverified tips, each line labelled and not yet tested: scripting/purchases-data-teleport-tips, scripting/streaming-prompts-seats-tips, ui/ui-clipping-modal-text-tips, building/mesh-colour-weld-tips." },
     { "version": "0.3.5", "notes": "New entries: ui/simulator-panels-and-data, design/concept-checklist-and-titles. Updated: ui/simulator-icons-fonts-studs." },
