@@ -52,6 +52,18 @@ assert.match(first, /designed to leave out your code, names, ids, links and emai
 assert.match(first, /safe-saving|Safe player data saving/);
 assert.ok(!(await a.call("search_knowledge", { query: "responsive mobile ui" })).includes(NOTICE_START), "no repeat in the same project");
 assert.match(await a.call("get_skill", { id: "security/remote-validation" }), /Validating remotes/);
+// a repeat of the same entry is not resent, but refresh=true resends it (needed after the chat is compacted)
+assert.match(await a.call("get_skill", { id: "security/remote-validation" }), /already provided/);
+assert.match(await a.call("get_skill", { id: "security/remote-validation", refresh: true }), /Validating remotes/);
+assert.match(await a.call("get_skill", { id: "security/remote-validation", refresh: "yes" }), /Invalid arguments.*true or false/);
+// tool hints for clients, and one version source (package.json)
+const listed = (await a.client.listTools()).tools;
+const by = Object.fromEntries(listed.map((x) => [x.name, x]));
+assert.equal(by.search_knowledge.annotations.readOnlyHint, true);
+assert.equal(by.get_skill.annotations.readOnlyHint, true);
+assert.equal(by.sharing.annotations, undefined, "sharing relies on the MCP defaults (destructive, open world)");
+assert.equal(by.submit_lesson.annotations.destructiveHint, false);
+assert.equal(a.client.getServerVersion().version, JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8")).version);
 
 // after the notice, a good tip is shared automatically; the first share returns the one-line note
 const shared = await a.call("submit_lesson", good);

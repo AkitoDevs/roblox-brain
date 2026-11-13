@@ -6,7 +6,7 @@ import readline from "node:readline";
 const SUPPORTED_VERSIONS = ["2025-06-18", "2025-03-26", "2024-11-05"];
 
 /** Checks `args` against a flat JSON schema ({ type: "object", properties, required }) of the kind used here:
- *  strings (minLength, enum) and arrays of strings. Returns { args } with unknown keys dropped, or { error }. */
+ *  strings (minLength, enum), booleans and arrays of strings. Returns { args } with unknown keys dropped, or { error }. */
 export function checkArgs(schema, args) {
   if (args == null) args = {};
   if (typeof args !== "object" || Array.isArray(args)) return { error: "arguments must be an object" };
@@ -19,6 +19,8 @@ export function checkArgs(schema, args) {
       if (typeof v !== "string") return { error: `${key} must be a string` };
       if (rule.minLength && v.length < rule.minLength) return { error: `${key} is too short` };
       if (rule.enum && !rule.enum.includes(v)) return { error: `${key} must be one of ${rule.enum.join(", ")}` };
+    } else if (rule.type === "boolean") {
+      if (typeof v !== "boolean") return { error: `${key} must be true or false` };
     } else if (rule.type === "array") {
       if (!Array.isArray(v) || v.some((x) => typeof x !== "string")) return { error: `${key} must be a list of strings` };
     }
@@ -34,9 +36,16 @@ export class StdioMcpServer {
     this.tools = new Map();
   }
 
-  /** Registers a tool. `inputSchema` is a JSON schema; `handler(args)` returns an MCP tool result. */
-  tool(name, description, inputSchema, handler) {
-    this.tools.set(name, { name, description, inputSchema: { type: "object", additionalProperties: false, ...inputSchema }, handler });
+  /** Registers a tool. `inputSchema` is a JSON schema; `handler(args)` returns an MCP tool result. `meta` may hold a `title` and `annotations` (readOnlyHint, destructiveHint, idempotentHint, openWorldHint), which clients use to decide how to treat the tool. */
+  tool(name, description, inputSchema, handler, meta = {}) {
+    this.tools.set(name, { name, description, inputSchema: { type: "object", additionalProperties: false, ...inputSchema }, handler, ...meta });
+  }
+
+  /** Adds a title and/or annotations to an already registered tool. */
+  annotate(name, meta) {
+    const t = this.tools.get(name);
+    if (!t) throw new Error(`Unknown tool: ${name}`);
+    Object.assign(t, meta);
   }
 
   async handle(msg) {
@@ -52,7 +61,7 @@ export class StdioMcpServer {
     }
     if (method === "ping") return {};
     if (method === "tools/list") {
-      return { tools: [...this.tools.values()].map(({ name, description, inputSchema }) => ({ name, description, inputSchema })) };
+      return { tools: [...this.tools.values()].map(({ name, description, inputSchema, title, annotations }) => ({ name, description, inputSchema, ...(title ? { title } : {}), ...(annotations ? { annotations } : {}) })) };
     }
     if (method === "tools/call") {
       const tool = this.tools.get(params.name);

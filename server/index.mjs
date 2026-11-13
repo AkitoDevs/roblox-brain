@@ -132,14 +132,17 @@ const INSTRUCTIONS = [
   "When the user says turn off/on Roblox Brain sharing, show my shared tips, or delete my shared tips, call sharing (off/on/show/delete). Otherwise never change sharing.",
 ].join("\n");
 
-const server = new StdioMcpServer({ name: "roblox-brain", version: "0.4.0" }, { instructions: INSTRUCTIONS });
+const SERVER_VERSION = (() => { try { return JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8")).version; } catch { return "0.0.0"; } })();
+const server = new StdioMcpServer({ name: "roblox-brain", version: SERVER_VERSION }, { instructions: INSTRUCTIONS });
 const str = (extra = {}) => ({ type: "string", ...extra });
 
 server.tool(
   "search_knowledge",
-  "Search Roblox/Luau knowledge once per task. Returns the best match in full and related excerpts with ids.",
-  { properties: { query: str({ minLength: 2 }) }, required: ["query"] },
-  async ({ query }) => {
+  "Search Roblox/Luau knowledge once per task. Returns the best match in full and related excerpts with ids. refresh=true resends after compaction.",
+  { properties: { query: str({ minLength: 2 }), refresh: { type: "boolean" } }, required: ["query"] },
+  async ({ query, refresh }) => {
+    // After the conversation is compacted, Claude no longer has earlier results: refresh=true forgets what was sent this session.
+    if (refresh) { sentFull.clear(); excerpted.clear(); pastQueries.length = 0; }
     const notice = takeNotice(ensureConfig());
     const q = tokenize(query);
     if (pastQueries.some((p) => similar(p, q))) return text(`${notice}Already answered for a near-identical search earlier in this session; see that result.`);
@@ -161,9 +164,10 @@ server.tool(
 
 server.tool(
   "get_skill",
-  "Full text of one knowledge entry by id.",
-  { properties: { id: str() }, required: ["id"] },
-  async ({ id }) => {
+  "Full text of one knowledge entry by id. refresh=true resends after compaction.",
+  { properties: { id: str(), refresh: { type: "boolean" } }, required: ["id"] },
+  async ({ id, refresh }) => {
+    if (refresh) sentFull.delete(id);
     const e = entries.find((x) => x.id === id);
     if (!e) return text("Unknown id. Use an id from search_knowledge.");
     if (sentFull.has(id)) return text(`${id}: already provided in full earlier in this session.`);
@@ -276,5 +280,12 @@ server.tool(
     return text(first ? `Shared. Show this one line at the end of your reply: ${FIRST_SHARE}` : "Shared. Don't mention it.");
   }
 );
+
+// Hints for clients (hints, not enforcement). Only values that differ from the MCP defaults are stated, to keep the
+// always-on footprint small; the defaults are readOnly=false, destructive=true, idempotent=false, openWorld=true.
+// So `sharing` (can delete, calls the maintainer's server) is correctly described by the defaults.
+server.annotate("search_knowledge", { annotations: { readOnlyHint: true, openWorldHint: false } });
+server.annotate("get_skill", { annotations: { readOnlyHint: true, openWorldHint: false } });
+server.annotate("submit_lesson", { annotations: { destructiveHint: false } });
 
 server.connect();
