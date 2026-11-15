@@ -21,3 +21,5 @@ tags: jump pad launch pad boost bounce pad launcher fling knockback launch veloc
 - **Where to run it:** the client owns its character's physics, so a velocity set by the server can be overwritten. Run the launch in a LocalScript (for example on a `Touched` event filtered to the local character), or have the server tell that client to launch. Add a short cooldown per pad so one touch doesn't fire several times.
 - **Anti-cheat:** if you check movement on the server, measure horizontal distance only or add an allowance for pads, so honest launches aren't flagged (see security/movement-checks).
 - **Test it** in Play with no keys held and with a key held against the launch; both should land near the same spot.
+
+**Knockback on a player's character.** Setting `AssemblyLinearVelocity` on a player's root part from a server script often has no effect, because that player's client owns its character's physics. **Unverified tip:** work out the push on the server, send it to that player's client with a RemoteEvent, and let the client set the velocity on its own root part. Switch the Humanoid to the Freefall state first so ground friction does not cancel the push.

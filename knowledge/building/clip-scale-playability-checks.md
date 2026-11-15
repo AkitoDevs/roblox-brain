@@ -21,3 +21,5 @@ tags: build critique greyscale value focal point clip check overlap coplanar cap
 3. Name the three biggest remaining weaknesses honestly, and say when a change is small.
 4. Numbers are background only: if a number passes but the image looks wrong, the image wins. If the person you're building for prefers another version, show the alternatives and take their pick.
 5. Report status with exact words (created, executed, previewed, imported, runtime-tested, approved) and keep the previous version recoverable.
+
+**Invisible walls from merged meshes.** **Unverified tip:** an imported map mesh that merges several separate pieces gets a Default collision hull that can span the gaps between them, which blocks players with invisible walls. Set `CollisionFidelity` to `PreciseConvexDecomposition` on merged prop and wall meshes (Box for flat floors), and set `CanCollide` to false on foliage, water and decor.
